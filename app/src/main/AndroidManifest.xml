@@ -27,6 +27,10 @@
             android:name=".BackgroundLocationService"
             android:exported="false" >
         </service>
+        <service
+            android:name=".EventUploaderService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>

@@ -1,6 +1,7 @@
 package cz.machalik.bcthesis.dencesty;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Binder;
@@ -15,6 +16,14 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationListener;
 
+/**
+ * Inspired by:
+ * https://gist.github.com/blackcj/20efe2ac885c7297a676
+ * https://github.com/googlesamples/android-play-location/tree/master/LocationUpdates
+ * <p/>
+ *
+ * Lukáš Machalík
+ */
 public class BackgroundLocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
                                                                   GoogleApiClient.OnConnectionFailedListener,
                                                                   LocationListener {
@@ -24,14 +33,40 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5 * 60 * 1000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
      * than this value.
      */
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+
+    /**
+     * Strong hint to the LocationClient for which location sources to use.
+     * PRIORITY_BALANCED_POWER_ACCURACY: Block level accuracy is considered to be about 100 meter
+     * accuracy. Using a coarse accuracy such as this often consumes less power.
+     */
+    public static final int LOCATION_UPDATES_PRIORITY = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
+
+    /**
+     * Starts this service.
+     *
+     * @see Service
+     */
+    public static void start(Context context) {
+        Intent intent = new Intent(context, BackgroundLocationService.class);
+        context.startService(intent);
+    }
+
+    /**
+     * Stops this service.
+     *
+     * @see Service
+     */
+    public static void stop(Context context) {
+        Intent intent = new Intent(context, BackgroundLocationService.class);
+        context.stopService(intent);
+    }
 
     /**
      * Provides the entry point to Google Play services.
@@ -85,7 +120,12 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
         // application will never receive updates faster than this value.
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
 
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // The priority of the request is a strong hint to the LocationClient for which location
+        // sources to use. For example, PRIORITY_HIGH_ACCURACY is more likely to use GPS, and
+        // PRIORITY_BALANCED_POWER_ACCURACY is more likely to use WIFI & Cell tower positioning,
+        // but it also depends on many other factors (such as which sources are available) and
+        // is implementation dependent.
+        mLocationRequest.setPriority(LOCATION_UPDATES_PRIORITY);
     }
 
     @Override
@@ -168,7 +208,10 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
-        Log.i(TAG, "Location changed: " + location.toString());
+        String info = "Location changed: " + location.toString();
+        //Log.i(TAG, info);
+        EventUploaderService.startActionAddEvent(this, info);
     }
+
 
 }

@@ -79,8 +79,7 @@ public class RaceActivity extends ActionBarActivity {
      */
     protected void startLocationUpdates() {
         Log.i(TAG, "Start location updates called");
-        Intent intent = new Intent(this, BackgroundLocationService.class);
-        startService(intent);
+        BackgroundLocationService.start(this);
         mRequestingLocationUpdates = true;
     }
 
@@ -89,8 +88,7 @@ public class RaceActivity extends ActionBarActivity {
      */
     protected void stopLocationUpdates() {
         Log.i(TAG, "Stop location updates called");
-        Intent intent = new Intent(this, BackgroundLocationService.class);
-        stopService(intent);
+        BackgroundLocationService.stop(this);
         mRequestingLocationUpdates = false;
     }
 
