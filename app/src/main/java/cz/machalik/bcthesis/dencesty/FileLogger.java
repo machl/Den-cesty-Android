@@ -19,6 +19,7 @@ public class FileLogger {
     public static final String LOG_FILE = "/den-cesty-log.txt";
 
     private static final File logFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + LOG_FILE);
+    // TODO: ošetření, když sdkarta není k dispozici
 
     private static final String preTag = " [";
     private static final String postTag = "] ";

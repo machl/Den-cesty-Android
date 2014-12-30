@@ -16,6 +16,10 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationListener;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Inspired by:
  * https://gist.github.com/blackcj/20efe2ac885c7297a676
@@ -83,8 +87,14 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
      */
     protected Location mCurrentLocation;
 
-    IBinder mBinder = new LocalBinder();
+    /**
+     * Number od location updates so far.
+     */
+    private static int numOfLocationUpdates = 0;
 
+    private static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+
+    IBinder mBinder = new LocalBinder();
     public class LocalBinder extends Binder {
         public BackgroundLocationService getServerInstance() {
             return BackgroundLocationService.this;
@@ -208,7 +218,23 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
-        String info = "Location changed: " + location.toString();
+
+        float course = location.hasBearing() ? location.getBearing() : -1;
+        double altitude = location.hasAltitude() ? location.getAltitude() : -1;
+        int counter = numOfLocationUpdates++;
+        float speed = location.hasSpeed() ? location.getSpeed() : -1;
+        float verAcc = -1; // Android does not provide vertical accuracy information
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+        float horAcc = location.hasAccuracy() ? location.getAccuracy() : -1;
+        String provider = location.getProvider() != null ? location.getProvider() : "notset";
+
+        Date date = new Date(location.getTime());
+        String timestamp = format.format(date);
+
+        String info = "Location changed: " + counter + ' ' + provider + ' ' + latitude + ' ' +
+                      longitude + ' ' + altitude + ' ' + speed + ' ' + course + ' ' + horAcc +
+                      ' ' + verAcc + ' ' + timestamp;
         //Log.i(TAG, info);
         EventUploaderService.startActionAddEvent(this, info);
     }
