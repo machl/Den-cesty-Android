@@ -1,4 +1,4 @@
-package cz.machalik.bcthesis.dencesty;
+package cz.machalik.bcthesis.dencesty.location;
 
 import android.app.Service;
 import android.content.Context;
@@ -12,13 +12,11 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationListener;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 /**
  * Inspired by:
@@ -37,7 +35,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5 * 60 * 1000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5000;//5 * 60 * 1000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -50,7 +48,8 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
      * PRIORITY_BALANCED_POWER_ACCURACY: Block level accuracy is considered to be about 100 meter
      * accuracy. Using a coarse accuracy such as this often consumes less power.
      */
-    public static final int LOCATION_UPDATES_PRIORITY = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
+    //public static final int LOCATION_UPDATES_PRIORITY = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
+    public static final int LOCATION_UPDATES_PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY;
 
     /**
      * Starts this service.
@@ -81,18 +80,6 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
      * Stores parameters for requests to the FusedLocationProviderApi.
      */
     protected LocationRequest mLocationRequest;
-
-    /**
-     * Represents a geographical location.
-     */
-    protected Location mCurrentLocation;
-
-    /**
-     * Number od location updates so far.
-     */
-    private static int numOfLocationUpdates = 0;
-
-    private static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
     IBinder mBinder = new LocalBinder();
     public class LocalBinder extends Binder {
@@ -217,26 +204,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
 
     @Override
     public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
-
-        float course = location.hasBearing() ? location.getBearing() : -1;
-        double altitude = location.hasAltitude() ? location.getAltitude() : -1;
-        int counter = numOfLocationUpdates++;
-        float speed = location.hasSpeed() ? location.getSpeed() : -1;
-        float verAcc = -1; // Android does not provide vertical accuracy information
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-        float horAcc = location.hasAccuracy() ? location.getAccuracy() : -1;
-        String provider = location.getProvider() != null ? location.getProvider() : "notset";
-
-        Date date = new Date(location.getTime());
-        String timestamp = format.format(date);
-
-        String info = "Location changed: " + counter + ' ' + provider + ' ' + latitude + ' ' +
-                      longitude + ' ' + altitude + ' ' + speed + ' ' + course + ' ' + horAcc +
-                      ' ' + verAcc + ' ' + timestamp;
-        //Log.i(TAG, info);
-        EventUploaderService.startActionAddEvent(this, info);
+        RaceModel.getInstance().onLocationChanged(this, location);
     }
 
 

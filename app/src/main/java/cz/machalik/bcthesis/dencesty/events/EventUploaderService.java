@@ -1,15 +1,11 @@
-package cz.machalik.bcthesis.dencesty;
+package cz.machalik.bcthesis.dencesty.events;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import cz.machalik.bcthesis.dencesty.other.FileLogger;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in

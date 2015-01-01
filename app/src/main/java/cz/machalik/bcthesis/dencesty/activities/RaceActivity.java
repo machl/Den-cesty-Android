@@ -1,6 +1,5 @@
-package cz.machalik.bcthesis.dencesty;
+package cz.machalik.bcthesis.dencesty.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -10,8 +9,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import cz.machalik.bcthesis.dencesty.R;
+import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
+import cz.machalik.bcthesis.dencesty.model.RaceModel;
+
 /**
- * Main Race activity.
+ * Test activity.
  *
  * Lukáš Machalík
  */
@@ -78,8 +81,7 @@ public class RaceActivity extends ActionBarActivity {
      * Requests location updates from the BackgroundLocationService.
      */
     protected void startLocationUpdates() {
-        Log.i(TAG, "Start location updates called");
-        BackgroundLocationService.start(this);
+        RaceModel.getInstance().startRace(this);
         mRequestingLocationUpdates = true;
     }
 
@@ -87,8 +89,7 @@ public class RaceActivity extends ActionBarActivity {
      * Removes location updates from the BackgroundLocationService.
      */
     protected void stopLocationUpdates() {
-        Log.i(TAG, "Stop location updates called");
-        BackgroundLocationService.stop(this);
+        RaceModel.getInstance().stopRace(this);
         mRequestingLocationUpdates = false;
     }
 
@@ -130,7 +131,8 @@ public class RaceActivity extends ActionBarActivity {
 
     @Override
     protected void onDestroy() {
-        stopLocationUpdates();
+        if (mRequestingLocationUpdates)
+            stopLocationUpdates();
         super.onDestroy();
     }
 
