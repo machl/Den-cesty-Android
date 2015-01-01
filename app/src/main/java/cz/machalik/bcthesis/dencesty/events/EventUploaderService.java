@@ -1,8 +1,8 @@
 package cz.machalik.bcthesis.dencesty.events;
 
 import android.app.IntentService;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import cz.machalik.bcthesis.dencesty.other.FileLogger;

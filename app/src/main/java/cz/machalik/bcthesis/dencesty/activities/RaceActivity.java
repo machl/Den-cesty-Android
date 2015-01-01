@@ -2,7 +2,6 @@ package cz.machalik.bcthesis.dencesty.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,7 +9,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import cz.machalik.bcthesis.dencesty.R;
-import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 /**

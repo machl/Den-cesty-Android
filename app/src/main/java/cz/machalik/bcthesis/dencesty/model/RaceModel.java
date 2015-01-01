@@ -13,7 +13,6 @@ import java.util.Map;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
-import cz.machalik.bcthesis.dencesty.other.FileLogger;
 
 /**
  * Lukáš Machalík

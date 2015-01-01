@@ -1,7 +1,5 @@
 package cz.machalik.bcthesis.dencesty.events;
 
-import android.content.Context;
-
 import java.util.ArrayDeque;
 import java.util.Queue;
 
