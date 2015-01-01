@@ -30,14 +30,15 @@ public class EventUploaderService extends IntentService {
     //private static final String EXTRA_PARAM1 = "cz.machalik.bcthesis.dencesty.extra.PARAM1";
     //private static final String EXTRA_PARAM2 = "cz.machalik.bcthesis.dencesty.extra.PARAM2";
 
+    private static EventQueue eventQueue = new EventQueue();
+
     /**
      * Starts this service to perform action AddEvent with the given parameters. If
      * the service is already performing a task this action will be queued.
      *
      * @see IntentService
      */
-    public static void startActionAddEvent(Context context, String event) {
-        // TODO: zmenit String parament na Event
+    public static void startActionAddEvent(Context context, Event event) {
         Intent intent = new Intent(context, EventUploaderService.class);
         intent.setAction(ACTION_ADD_EVENT);
         intent.putExtra(EXTRA_EVENT, event);
@@ -67,7 +68,7 @@ public class EventUploaderService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_ADD_EVENT.equals(action)) {
-                final String event = intent.getStringExtra(EXTRA_EVENT);
+                final Event event = (Event) intent.getSerializableExtra(EXTRA_EVENT);
                 handleActionAddEvent(event);
             } /*else if (ACTION_FOO.equals(action)) {
                 final String param1 = intent.getStringExtra(EXTRA_PARAM1);
@@ -81,9 +82,10 @@ public class EventUploaderService extends IntentService {
      * Handle action Baz in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionAddEvent(String event) {
-        Log.i(TAG, "New event: " + event);
-        FileLogger.log(TAG, "New event: " + event);
+    private void handleActionAddEvent(Event event) {
+        Log.i(TAG, "New event: " + event.toString());
+        FileLogger.log(TAG, "New event: " + event.toString());
+        eventQueue.add(event);
     }
 
     /**

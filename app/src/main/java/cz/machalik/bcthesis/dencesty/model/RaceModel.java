@@ -7,9 +7,13 @@ import android.util.Log;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
+import cz.machalik.bcthesis.dencesty.other.FileLogger;
 
 /**
  * Lukáš Machalík
@@ -35,7 +39,8 @@ public class RaceModel {
      */
     private static int numOfLocationUpdates = 0;
 
-    private static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    // TODO: move to WebAPI
+    public static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
     public void startRace(Context context) {
         Log.i(TAG, "Starting location updates");
@@ -43,31 +48,46 @@ public class RaceModel {
     }
 
     public void stopRace(Context context) {
-        Log.i(TAG, "Stoping location updates");
+        Log.i(TAG, "Stopping location updates");
         BackgroundLocationService.stop(context);
     }
 
     public void onLocationChanged(Context context, Location location) {
         mCurrentLocation = location;
 
-        float course = location.hasBearing() ? location.getBearing() : -1;
-        double altitude = location.hasAltitude() ? location.getAltitude() : -1;
-        int counter = numOfLocationUpdates++;
-        float speed = location.hasSpeed() ? location.getSpeed() : -1;
-        float verAcc = -1; // Android does not provide vertical accuracy information
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-        float horAcc = location.hasAccuracy() ? location.getAccuracy() : -1;
+        Float course = location.hasBearing() ? location.getBearing() : -1;
+        Double altitude = location.hasAltitude() ? location.getAltitude() : -1;
+        Integer counter = numOfLocationUpdates++;
+        Float speed = location.hasSpeed() ? location.getSpeed() : -1;
+        Float verAcc = -1f; // Android does not provide vertical accuracy information
+        Double latitude = location.getLatitude();
+        Double longitude = location.getLongitude();
+        Float horAcc = location.hasAccuracy() ? location.getAccuracy() : -1;
         String provider = location.getProvider() != null ? location.getProvider() : "notset";
 
         Date date = new Date(location.getTime());
-        String timestamp = format.format(date);
+        String timestamp = dateFormat.format(date);
 
-        String info = "Location changed: " + counter + ' ' + provider + ' ' + latitude + ' ' +
+        /*String info = "Location changed: " + counter + ' ' + provider + ' ' + latitude + ' ' +
                 longitude + ' ' + altitude + ' ' + speed + ' ' + course + ' ' + horAcc +
                 ' ' + verAcc + ' ' + timestamp;
-
         //Log.i(TAG, info);
-        EventUploaderService.startActionAddEvent(context, info);
+        FileLogger.log(TAG, info);*/
+
+        Map dataMap = new HashMap(10);
+        dataMap.put("latitude", latitude);
+        dataMap.put("longitude", longitude);
+        dataMap.put("altitude", altitude);
+        dataMap.put("course", course);
+        dataMap.put("speed", speed);
+        dataMap.put("horAcc", horAcc);
+        dataMap.put("verAcc", verAcc);
+        dataMap.put("timestamp", timestamp);
+        dataMap.put("counter", counter);
+        dataMap.put("provider", provider);
+
+        Event event = new Event(context, Event.EVENTTYPE_LOCATIONUPDATE, dataMap);
+
+        EventUploaderService.startActionAddEvent(context, event);
     }
 }
