@@ -81,4 +81,7 @@ public class Event implements Serializable {
                 batteryState + " " + data.toString();
     }
 
+    public int getEventId() {
+        return eventId;
+    }
 }

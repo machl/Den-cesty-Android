@@ -3,19 +3,19 @@ package cz.machalik.bcthesis.dencesty.events;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Queue;
+import java.util.List;
 
 /**
  * Lukáš Machalík
  */
 public class EventQueue {
 
-    private Queue<Event> queue;
+    private List<Event> queue;
 
     public EventQueue() {
-        this.queue = new ArrayDeque<>();
+        this.queue = new ArrayList<>();
     }
 
     public void add(Event event) {
@@ -23,7 +23,18 @@ public class EventQueue {
     }
 
     public void remove(int[] ids) {
-        // TODO remove events by ids
+        for (int id : ids) {
+            Event founded = null;
+            for (Event e : queue) {
+                if (e.getEventId() == id) {
+                    founded = e;
+                    break;
+                }
+            }
+            if (founded != null) {
+                queue.remove(founded);
+            }
+        }
     }
 
     public int size() {

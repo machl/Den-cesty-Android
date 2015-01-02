@@ -31,8 +31,10 @@ public class EventUploaderService extends IntentService {
 
     private static final String ACTION_ADD_EVENT = "cz.machalik.bcthesis.dencesty.action.ADD_EVENT";
     private static final String ACTION_UPLOAD = "cz.machalik.bcthesis.dencesty.action.UPLOAD";
+    private static final String ACTION_REMOVE_EVENTS = "cz.machalik.bcthesis.dencesty.action.REMOVE_EVENTS";
 
     private static final String EXTRA_EVENT = "cz.machalik.bcthesis.dencesty.extra.EVENT";
+    private static final String EXTRA_IDS = "cz.machalik.bcthesis.dencesty.extra.IDS";
 
     private static EventQueue eventQueue = new EventQueue();
 
@@ -61,6 +63,19 @@ public class EventUploaderService extends IntentService {
         context.startService(intent);
     }
 
+    /**
+     * Starts this service to perform action RemoveEvents with the given parameters. If
+     * the service is already performing a task this action will be queued.
+     *
+     * @see IntentService
+     */
+    public static void startActionRemoveEvents(Context context, int[] ids) {
+        Intent intent = new Intent(context, EventUploaderService.class);
+        intent.setAction(ACTION_REMOVE_EVENTS);
+        intent.putExtra(EXTRA_IDS, ids);
+        context.startService(intent);
+    }
+
     public EventUploaderService() {
         super("EventUploaderService");
     }
@@ -74,6 +89,9 @@ public class EventUploaderService extends IntentService {
                 handleActionAddEvent(event);
             } else if (ACTION_UPLOAD.equals(action)) {
                 handleActionUpload();
+            }else if (ACTION_REMOVE_EVENTS.equals(action)) {
+                final int[] ids = intent.getIntArrayExtra(EXTRA_IDS);
+                handleActionRemoveEvents(ids);
             }
         }
     }
@@ -106,15 +124,12 @@ public class EventUploaderService extends IntentService {
                     try {
 
                         int len = savedIdsJsonArray.length();
-                        int savedIds[] = new int[len];
+                        int[] savedIds = new int[len];
                         for (int i = 0; i < len; i++) {
                             savedIds[i] = savedIdsJsonArray.getInt(i);
                         }
 
-                        String message = "Removing events: " + Arrays.toString(savedIds);
-                        Log.i(TAG, message);
-                        FileLogger.log(TAG, message);
-                        // TODO: předat savedIds pro remove
+                        EventUploaderService.startActionRemoveEvents(this, savedIds);
 
                     } catch (JSONException e) {
                         String message = "Event upload response: JSONException: " + e.getLocalizedMessage();
@@ -128,12 +143,21 @@ public class EventUploaderService extends IntentService {
                     FileLogger.log(TAG, message);
                 }
             }
-
         } else {
             Log.i(TAG, "Event queue upload failed: Queue is empty!");
         }
+    }
 
+    /**
+     * Handle action RemoveEvents in the provided background thread with the provided
+     * parameters.
+     */
+    private void handleActionRemoveEvents(int[] ids) {
+        String message = "Removing events: " + Arrays.toString(ids);
+        Log.i(TAG, message);
+        FileLogger.log(TAG, message);
 
+        eventQueue.remove(ids);
     }
 
 
