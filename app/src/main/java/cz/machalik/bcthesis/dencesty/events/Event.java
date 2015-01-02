@@ -5,11 +5,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
+import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
  * Lukáš Machalík
@@ -48,10 +51,28 @@ public class Event implements Serializable {
         int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1); // TODO: co je to scale? kdy se meni? nemeni se pripojenim powerbanky?
         int status = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
         int plugged = batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-        this.batteryLevel = (level / scale) * 100;
-        this.batteryState = convertBatteryStatusToWebApi(status, plugged);
+        this.batteryLevel = (int) (((float)level / (float)scale) * 100.f);
+        this.batteryState = WebAPI.convertBatteryStatus(status, plugged);
 
-        this.timestamp = RaceModel.dateFormat.format(new Date());
+        this.timestamp = WebAPI.DATE_FORMAT.format(new Date());
+    }
+
+    public JSONObject toJSONObject() {
+        JSONObject ret = new JSONObject();
+
+        try {
+            ret.put("eventId", eventId);
+            ret.put("type", type);
+            ret.put("data", new JSONObject(data));
+            ret.put("batL", batteryLevel);
+            ret.put("batS", batteryState);
+            ret.put("time", timestamp);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return ret;
     }
 
     @Override
@@ -60,20 +81,4 @@ public class Event implements Serializable {
                 batteryState + " " + data.toString();
     }
 
-    // TODO: move to WebAPI
-    private static int convertBatteryStatusToWebApi (int status, int plugged) {
-        switch (status) {
-            case BatteryManager.BATTERY_STATUS_UNKNOWN: return 0;
-            case BatteryManager.BATTERY_STATUS_CHARGING: return 2;
-            case BatteryManager.BATTERY_STATUS_NOT_CHARGING: return 1;
-            case BatteryManager.BATTERY_STATUS_FULL: return 3;
-            case BatteryManager.BATTERY_STATUS_DISCHARGING:
-                if (plugged == BatteryManager.BATTERY_PLUGGED_USB) {
-                    return 4;
-                } else {
-                    return 1;
-                }
-            default: return 0;
-        }
-    }
 }

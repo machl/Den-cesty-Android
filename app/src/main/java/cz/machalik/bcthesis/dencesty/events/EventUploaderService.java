@@ -5,7 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
+
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
+import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -22,13 +29,10 @@ public class EventUploaderService extends IntentService {
 
     protected static final String TAG = "EventUploaderService";
 
-    // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
     private static final String ACTION_ADD_EVENT = "cz.machalik.bcthesis.dencesty.action.ADD_EVENT";
-    //private static final String ACTION_FOO = "cz.machalik.bcthesis.dencesty.action.FOO";
+    private static final String ACTION_UPLOAD = "cz.machalik.bcthesis.dencesty.action.UPLOAD";
 
     private static final String EXTRA_EVENT = "cz.machalik.bcthesis.dencesty.extra.EVENT";
-    //private static final String EXTRA_PARAM1 = "cz.machalik.bcthesis.dencesty.extra.PARAM1";
-    //private static final String EXTRA_PARAM2 = "cz.machalik.bcthesis.dencesty.extra.PARAM2";
 
     private static EventQueue eventQueue = new EventQueue();
 
@@ -46,18 +50,16 @@ public class EventUploaderService extends IntentService {
     }
 
     /**
-     * Starts this service to perform action Foo with the given parameters. If
+     * Starts this service to perform action Upload with the given parameters. If
      * the service is already performing a task this action will be queued.
      *
      * @see IntentService
      */
-    /*public static void startActionFoo(Context context, String param1, String param2) {
+    public static void startActionUpload(Context context) {
         Intent intent = new Intent(context, EventUploaderService.class);
-        intent.setAction(ACTION_FOO);
-        intent.putExtra(EXTRA_PARAM1, param1);
-        intent.putExtra(EXTRA_PARAM2, param2);
+        intent.setAction(ACTION_UPLOAD);
         context.startService(intent);
-    }*/
+    }
 
     public EventUploaderService() {
         super("EventUploaderService");
@@ -70,16 +72,14 @@ public class EventUploaderService extends IntentService {
             if (ACTION_ADD_EVENT.equals(action)) {
                 final Event event = (Event) intent.getSerializableExtra(EXTRA_EVENT);
                 handleActionAddEvent(event);
-            } /*else if (ACTION_FOO.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionFoo(param1, param2);
-            }*/
+            } else if (ACTION_UPLOAD.equals(action)) {
+                handleActionUpload();
+            }
         }
     }
 
     /**
-     * Handle action Baz in the provided background thread with the provided
+     * Handle action AddEvent in the provided background thread with the provided
      * parameters.
      */
     private void handleActionAddEvent(Event event) {
@@ -89,12 +89,52 @@ public class EventUploaderService extends IntentService {
     }
 
     /**
-     * Handle action Foo in the provided background thread with the provided
+     * Handle action Upload in the provided background thread with the provided
      * parameters.
      */
-    /*private void handleActionFoo(String param1, String param2) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }*/
+    private void handleActionUpload() {
+        if (eventQueue.size() > 0) {
+            JSONArray json = eventQueue.toJSONArray();
+            //Log.i(TAG, "JSON Request: " + json.toString());
+
+            JSONObject jsonResponse = WebAPI.synchronousEventHandlerRequest(json);
+            if (jsonResponse != null) {
+                //Log.i(TAG, "JSON Response: " + jsonResponse.toString());
+                JSONArray savedIdsJsonArray = jsonResponse.optJSONArray("savedEventIds");
+
+                if (savedIdsJsonArray != null) {
+                    try {
+
+                        int len = savedIdsJsonArray.length();
+                        int savedIds[] = new int[len];
+                        for (int i = 0; i < len; i++) {
+                            savedIds[i] = savedIdsJsonArray.getInt(i);
+                        }
+
+                        String message = "Removing events: " + Arrays.toString(savedIds);
+                        Log.i(TAG, message);
+                        FileLogger.log(TAG, message);
+                        // TODO: předat savedIds pro remove
+
+                    } catch (JSONException e) {
+                        String message = "Event upload response: JSONException: " + e.getLocalizedMessage();
+                        Log.e(TAG, message);
+                        FileLogger.log(TAG, message);
+                        e.printStackTrace();
+                    }
+                } else {
+                    String message = "Event upload response: Wrong response: " + jsonResponse.toString();
+                    Log.e(TAG, message);
+                    FileLogger.log(TAG, message);
+                }
+            }
+
+        } else {
+            Log.i(TAG, "Event queue upload failed: Queue is empty!");
+        }
+
+
+    }
 
 
 }

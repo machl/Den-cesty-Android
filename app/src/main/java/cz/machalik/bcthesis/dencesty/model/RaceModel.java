@@ -4,8 +4,6 @@ import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +11,7 @@ import java.util.Map;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
+import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
  * Lukáš Machalík
@@ -38,8 +37,6 @@ public class RaceModel {
      */
     private static int numOfLocationUpdates = 0;
 
-    // TODO: move to WebAPI
-    public static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
     public void startRace(Context context) {
         Log.i(TAG, "Starting location updates");
@@ -65,7 +62,7 @@ public class RaceModel {
         String provider = location.getProvider() != null ? location.getProvider() : "notset";
 
         Date date = new Date(location.getTime());
-        String timestamp = dateFormat.format(date);
+        String timestamp = WebAPI.DATE_FORMAT.format(date);
 
         /*String info = "Location changed: " + counter + ' ' + provider + ' ' + latitude + ' ' +
                 longitude + ' ' + altitude + ' ' + speed + ' ' + course + ' ' + horAcc +
@@ -88,5 +85,6 @@ public class RaceModel {
         Event event = new Event(context, Event.EVENTTYPE_LOCATIONUPDATE, dataMap);
 
         EventUploaderService.startActionAddEvent(context, event);
+        EventUploaderService.startActionUpload(context);
     }
 }
