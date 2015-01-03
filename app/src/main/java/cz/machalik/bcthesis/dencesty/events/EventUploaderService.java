@@ -26,7 +26,6 @@ import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
  * Lukáš Machalík
  */
 public class EventUploaderService extends IntentService {
-
     protected static final String TAG = "EventUploaderService";
 
     private static final String ACTION_ADD_EVENT = "cz.machalik.bcthesis.dencesty.action.ADD_EVENT";

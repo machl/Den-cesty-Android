@@ -1,11 +1,17 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import cz.machalik.bcthesis.dencesty.R;
@@ -17,12 +23,14 @@ import cz.machalik.bcthesis.dencesty.model.RaceModel;
  * Lukáš Machalík
  */
 public class RaceActivity extends ActionBarActivity {
-
     protected static final String TAG = "RaceActivity";
 
     protected Button mStartUpdatesButton;
     protected Button mStopUpdatesButton;
     protected TextView myLogTextView;
+    protected Button loginButton;
+    protected EditText emailTextField;
+    protected EditText passwordTextField;
 
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
@@ -46,6 +54,21 @@ public class RaceActivity extends ActionBarActivity {
         mStartUpdatesButton = (Button) findViewById(R.id.start_updates_button);
         mStopUpdatesButton = (Button) findViewById(R.id.stop_updates_button);
         myLogTextView = (TextView) findViewById(R.id.my_log);
+
+        emailTextField = (EditText) findViewById(R.id.emailTextField);
+        passwordTextField = (EditText) findViewById(R.id.passwordTextField);
+        loginButton = (Button) findViewById(R.id.login_button);
+
+        View.OnFocusChangeListener ofcl = new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard(v);
+                }
+            }
+        };
+        emailTextField.setOnFocusChangeListener(ofcl);
+        passwordTextField.setOnFocusChangeListener(ofcl);
 
         mRequestingLocationUpdates = false;
         setButtonsEnabledState();
@@ -73,6 +96,11 @@ public class RaceActivity extends ActionBarActivity {
             setButtonsEnabledState();
             stopLocationUpdates();
         }
+    }
+
+    public void loginButtonHandler(View view) {
+        new LoginAsyncTask(this).execute(emailTextField.getText().toString(),
+                                         passwordTextField.getText().toString());
     }
 
     /**
@@ -134,6 +162,40 @@ public class RaceActivity extends ActionBarActivity {
         super.onDestroy();
     }
 
+    private class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
+
+        private Context context;
+        public LoginAsyncTask (Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            if (params.length != 2) {
+                Log.e(TAG, "Wrong number of params on execute method of " + getClass().getName());
+                return false;
+            }
+
+            String email = params[0];
+            String password = params[1];
+
+            return RaceModel.getInstance().login(context, email, password);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success)
+                Log.i(TAG, "Successful login");
+            else
+                Log.i(TAG, "Failed login");
+        }
+    }
+
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -154,5 +216,5 @@ public class RaceActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 }

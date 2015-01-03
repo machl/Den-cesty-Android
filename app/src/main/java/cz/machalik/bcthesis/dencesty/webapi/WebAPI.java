@@ -18,6 +18,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
 
 /**
@@ -30,16 +31,80 @@ public class WebAPI {
     //public static final String URL_WEBSERVER = "http://www.dencesty.cz"; // must be with 'www.' !
 
     public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/race/login";
-    public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/events/create/1";
-    public static final String URL_RACEINFOUPDATE = URL_WEBSERVER + "/race/info/1";
+    public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/events/create/%d";
+    public static final String URL_RACEINFOUPDATE = URL_WEBSERVER + "/race/info/%d";
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+
+    public static JSONObject synchronousLoginHandlerRequest(String email, String password) {
+        JSONObject jsonResponse = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(URL_LOGINHANDLER);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setUseCaches(false);
+            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            urlConnection.setConnectTimeout(10 * 1000); // in millis
+            urlConnection.setReadTimeout(10 * 1000); // in millis
+            urlConnection.connect();
+
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "US-ASCII"));
+            bw.write(String.format("&email=%s&password=%s", email, password));
+            bw.flush();
+
+            int responseCode = urlConnection.getResponseCode();
+            if (responseCode == 200) {
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line+"\n");
+                }
+                br.close();
+                String jsonString = sb.toString();
+
+                jsonResponse = new JSONObject(jsonString);
+
+            } else {
+                String message = "Login handler: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
+                Log.e(TAG, message);
+                FileLogger.log(TAG, message);
+                // TODO: Create error event
+            }
+
+        } catch (MalformedURLException e) {
+            String message = "Login handler: MalformedURLException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } catch (IOException e) {
+            String message = "Login handler: IOException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } catch (JSONException e) {
+            String message = "Login handler: JSONException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+
+        return jsonResponse;
+    }
 
     public static JSONObject synchronousEventHandlerRequest(JSONArray eventsAsJson) {
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(URL_EVENTHANDLER);
+            URL url = new URL(String.format(URL_EVENTHANDLER, RaceModel.getInstance().getWalkerId()));
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
