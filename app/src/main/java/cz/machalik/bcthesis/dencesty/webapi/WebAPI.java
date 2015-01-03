@@ -85,7 +85,7 @@ public class WebAPI {
             String message = "Login handler: IOException: " + e.getLocalizedMessage();
             Log.e(TAG, message);
             FileLogger.log(TAG, message);
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (JSONException e) {
             String message = "Login handler: JSONException: " + e.getLocalizedMessage();
             Log.e(TAG, message);
@@ -101,6 +101,11 @@ public class WebAPI {
     }
 
     public static JSONObject synchronousEventHandlerRequest(JSONArray eventsAsJson) {
+        if (!RaceModel.getInstance().isLogged()) {
+            Log.e(TAG, "User is not logged to do synchronousEventHandlerRequest!");
+            return null;
+        }
+
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
@@ -149,9 +154,74 @@ public class WebAPI {
             String message = "Event handler: IOException: " + e.getLocalizedMessage();
             Log.e(TAG, message);
             FileLogger.log(TAG, message);
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (JSONException e) {
             String message = "Event handler: JSONException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+
+        return jsonResponse;
+    }
+
+    public static JSONObject synchronousRaceInfoUpdateRequest() {
+        if (!RaceModel.getInstance().isLogged()) {
+            Log.e(TAG, "User is not logged to do synchronousRaceInfoUpdateRequest!");
+            return null;
+        }
+
+        JSONObject jsonResponse = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(String.format(URL_RACEINFOUPDATE, RaceModel.getInstance().getWalkerId()));
+            urlConnection = (HttpURLConnection) url.openConnection();
+            //urlConnection.setDoInput(false);
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setUseCaches(false);
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setConnectTimeout(10 * 1000); // in millis
+            urlConnection.setReadTimeout(10 * 1000); // in millis
+            urlConnection.connect();
+
+            int responseCode = urlConnection.getResponseCode();
+            if (responseCode == 200) {
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line+"\n");
+                }
+                br.close();
+                String jsonString = sb.toString();
+
+                jsonResponse = new JSONObject(jsonString);
+
+            } else {
+                String message = "Race info update: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
+                Log.e(TAG, message);
+                FileLogger.log(TAG, message);
+                // TODO: Create error event
+            }
+
+        } catch (MalformedURLException e) {
+            String message = "Race info update: MalformedURLException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } catch (IOException e) {
+            String message = "Race info update: IOException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            //e.printStackTrace();
+        } catch (JSONException e) {
+            String message = "Race info update: JSONException: " + e.getLocalizedMessage();
             Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();

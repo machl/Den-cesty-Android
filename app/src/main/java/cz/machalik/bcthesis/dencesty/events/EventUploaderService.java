@@ -152,7 +152,8 @@ public class EventUploaderService extends IntentService {
      * parameters.
      */
     private void handleActionRemoveEvents(int[] ids) {
-        String message = "Removing events: " + Arrays.toString(ids);
+        String message = "Removing events: " + Arrays.toString(ids) +
+                         " Remaining count: " + (eventQueue.size()-ids.length);
         Log.i(TAG, message);
         FileLogger.log(TAG, message);
 

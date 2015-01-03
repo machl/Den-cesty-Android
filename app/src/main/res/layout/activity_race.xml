@@ -9,33 +9,23 @@
     android:clickable="true"
     android:focusableInTouchMode="true">
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/my_log"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_above="@+id/start_updates_button"
-        android:layout_below="@+id/login_button" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start"
         android:id="@+id/start_updates_button"
+        android:onClick="startUpdatesButtonHandler"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:onClick="startUpdatesButtonHandler" />
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Stop"
         android:id="@+id/stop_updates_button"
+        android:onClick="stopUpdatesButtonHandler"
         android:layout_alignParentBottom="true"
-        android:layout_alignEnd="@+id/my_log"
-        android:onClick="stopUpdatesButtonHandler" />
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -66,4 +56,41 @@
         android:layout_below="@+id/emailTextField"
         android:layout_centerHorizontal="true"
         android:text="test" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refresh Race Info"
+        android:id="@+id/refreshButton"
+        android:layout_below="@+id/login_button"
+        android:layout_centerHorizontal="true"
+        android:onClick="refreshButtonHandler" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="-1 m"
+        android:id="@+id/distanceTextView"
+        android:layout_below="@+id/refreshButton"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="-1 km/h"
+        android:id="@+id/avgSpeedTextView"
+        android:layout_below="@+id/distanceTextView"
+        android:layout_centerHorizontal="true" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/walkersListView"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/start_updates_button"
+        android:layout_below="@+id/avgSpeedTextView"
+        android:choiceMode="none" />
+
 </RelativeLayout>

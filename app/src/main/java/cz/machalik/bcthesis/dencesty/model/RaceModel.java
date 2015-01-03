@@ -5,6 +5,7 @@ import android.location.Location;
 import android.os.Build;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Date;
@@ -33,15 +34,15 @@ public class RaceModel {
     /**
      * True, if user is successfully logged.
      */
-    private boolean isLogged = false;
+    protected boolean isLogged = false;
 
     /**
      * Info about logged user.
      */
-    private int walkerId;
-    private String walkerName;
-    private String walkerSurname;
-    private String walkerUsername;
+    protected int walkerId;
+    protected String walkerName;
+    protected String walkerSurname;
+    protected String walkerUsername;
 
     /**
      * Represents a geographical location.
@@ -49,9 +50,20 @@ public class RaceModel {
     protected Location mCurrentLocation;
 
     /**
+     * Race info entries
+     */
+    protected int raceInfoDistance;
+    protected int raceInfoAvgSpeed;
+    protected int raceInfoNumWalkersAhead;
+    protected int raceInfoNumWalkersBehind;
+    protected int raceInfoNumWalkersEnded;
+    protected JSONArray raceInfoWalkersAhead;
+    protected JSONArray raceInfoWalkersBehind;
+
+    /**
      * Number od location updates so far.
      */
-    private static int numOfLocationUpdates = 0;
+    protected static int numOfLocationUpdates = 0;
 
 
     public void startRace(Context context) {
@@ -121,7 +133,7 @@ public class RaceModel {
         return false;
     }
 
-    private void onSuccessfulLogin(Context context, JSONObject jsonData) {
+    protected void onSuccessfulLogin(Context context, JSONObject jsonData) {
         if (!jsonData.has("id") || !jsonData.has("name") || !jsonData.has("surname") || !jsonData.has("username")) {
             String message = "Response login missing info";
             Log.e(TAG, message);
@@ -147,6 +159,42 @@ public class RaceModel {
         EventUploaderService.startActionUpload(context);
     }
 
+    public boolean fetchRaceInfo(Context context) {
+        JSONObject jsonResponse = WebAPI.synchronousRaceInfoUpdateRequest();
+
+        if (jsonResponse != null) {
+            onFetchedRaceInfo(context, jsonResponse);
+            return true;
+        }
+
+        return false;
+    }
+
+    protected void onFetchedRaceInfo(Context context, JSONObject jsonData) {
+        if (!jsonData.has("distance") || !jsonData.has("speed") || !jsonData.has("numWalkersAhead") ||
+                !jsonData.has("numWalkersBehind") || !jsonData.has("numWalkersEnded") ||
+                !jsonData.has("walkersAhead") || !jsonData.has("walkersBehind")) {
+            String message = "Response RaceInfo missing some entries";
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            return;
+        }
+
+        this.raceInfoDistance = jsonData.optInt("distance");
+        this.raceInfoAvgSpeed = jsonData.optInt("speed");
+        this.raceInfoNumWalkersAhead = jsonData.optInt("numWalkersAhead");
+        this.raceInfoNumWalkersBehind = jsonData.optInt("numWalkersBehind");
+        this.raceInfoNumWalkersEnded = jsonData.optInt("numWalkersEnded");
+        this.raceInfoWalkersAhead = jsonData.optJSONArray("walkersAhead");
+        this.raceInfoWalkersBehind = jsonData.optJSONArray("walkersBehind");
+    }
+
+
+    /*** GETTERS & SETTERS ***/
+
+    public boolean isLogged() {
+        return isLogged;
+    }
 
     public int getWalkerId() {
         return walkerId;
@@ -158,5 +206,33 @@ public class RaceModel {
 
     public String getWalkerFullName() {
         return walkerName + " " + walkerSurname;
+    }
+
+    public int getRaceInfoDistance() {
+        return raceInfoDistance;
+    }
+
+    public int getRaceInfoAvgSpeed() {
+        return raceInfoAvgSpeed;
+    }
+
+    public int getRaceInfoNumWalkersAhead() {
+        return raceInfoNumWalkersAhead;
+    }
+
+    public int getRaceInfoNumWalkersBehind() {
+        return raceInfoNumWalkersBehind;
+    }
+
+    public int getRaceInfoNumWalkersEnded() {
+        return raceInfoNumWalkersEnded;
+    }
+
+    public JSONArray getRaceInfoWalkersAhead() {
+        return raceInfoWalkersAhead;
+    }
+
+    public JSONArray getRaceInfoWalkersBehind() {
+        return raceInfoWalkersBehind;
     }
 }

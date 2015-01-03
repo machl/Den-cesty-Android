@@ -6,12 +6,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import cz.machalik.bcthesis.dencesty.R;
@@ -27,24 +26,19 @@ public class RaceActivity extends ActionBarActivity {
 
     protected Button mStartUpdatesButton;
     protected Button mStopUpdatesButton;
-    protected TextView myLogTextView;
     protected Button loginButton;
     protected EditText emailTextField;
     protected EditText passwordTextField;
+    protected Button refreshButton;
+    protected TextView distanceTextView;
+    protected TextView avgSpeedTextView;
+    protected ListView walkersListView;
 
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
      */
     protected Boolean mRequestingLocationUpdates;
-
-
-    private int counter = 0;
-    private void addLocUpdateToLog(String lat, String lon, String time) {
-        CharSequence old = myLogTextView.getText();
-        myLogTextView.setText(counter + ": " + lat + ", " + lon + ", " + time + "\n" + old);
-        counter++;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +47,6 @@ public class RaceActivity extends ActionBarActivity {
 
         mStartUpdatesButton = (Button) findViewById(R.id.start_updates_button);
         mStopUpdatesButton = (Button) findViewById(R.id.stop_updates_button);
-        myLogTextView = (TextView) findViewById(R.id.my_log);
 
         emailTextField = (EditText) findViewById(R.id.emailTextField);
         passwordTextField = (EditText) findViewById(R.id.passwordTextField);
@@ -69,6 +62,13 @@ public class RaceActivity extends ActionBarActivity {
         };
         emailTextField.setOnFocusChangeListener(ofcl);
         passwordTextField.setOnFocusChangeListener(ofcl);
+
+        refreshButton = (Button) findViewById(R.id.refreshButton);
+
+        distanceTextView = (TextView) findViewById(R.id.distanceTextView);
+        avgSpeedTextView = (TextView) findViewById(R.id.avgSpeedTextView);
+
+        walkersListView = (ListView) findViewById(R.id.walkersListView);
 
         mRequestingLocationUpdates = false;
         setButtonsEnabledState();
@@ -99,8 +99,14 @@ public class RaceActivity extends ActionBarActivity {
     }
 
     public void loginButtonHandler(View view) {
+        // TODO: zabezpečit proti několikanásobnému zmáčknutí
         new LoginAsyncTask(this).execute(emailTextField.getText().toString(),
                                          passwordTextField.getText().toString());
+    }
+
+    public void refreshButtonHandler(View view) {
+        // TODO: zabezpečit proti několikanásobnému zmáčknutí
+        new RaceInfoUpdateAsyncTask(this).execute();
     }
 
     /**
@@ -162,7 +168,7 @@ public class RaceActivity extends ActionBarActivity {
         super.onDestroy();
     }
 
-    private class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
+    private class LoginAsyncTask extends AsyncTask<String, Void, Boolean> {
 
         private Context context;
         public LoginAsyncTask (Context context){
@@ -191,10 +197,43 @@ public class RaceActivity extends ActionBarActivity {
         }
     }
 
-    public void hideKeyboard(View view) {
+    private class RaceInfoUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
+
+        private Context context;
+        public RaceInfoUpdateAsyncTask (Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return RaceModel.getInstance().fetchRaceInfo(context);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                Log.i(TAG, "Successful RaceInfoUpdate");
+                updateRaceInfoUI();
+            } else {
+                Log.i(TAG, "Failed RaceInfoUpdate");
+            }
+        }
+    }
+
+
+    private void updateRaceInfoUI() {
+        this.distanceTextView.setText(String.format("%d m", RaceModel.getInstance().getRaceInfoDistance()));
+        this.avgSpeedTextView.setText(String.format("%d km/h", RaceModel.getInstance().getRaceInfoAvgSpeed()));
+
+        walkersListView.setAdapter(new WalkersListAdapter(this));
+    }
+
+    private void hideKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
+
+
     /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
