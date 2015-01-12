@@ -65,9 +65,9 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
      *
      * @see Service
      */
-    public static void stop(Context context) {
+    public static boolean stop(Context context) {
         Intent intent = new Intent(context, BackgroundLocationService.class);
-        context.stopService(intent);
+        return context.stopService(intent);
     }
 
     /**

@@ -67,13 +67,28 @@ public class RaceModel {
 
 
     public void startRace(Context context) {
+        // Create new start race event
+        Map dataMap = new HashMap(1);
+        dataMap.put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
+        Event event = new Event(context, Event.EVENTTYPE_STARTRACE, dataMap);
+        EventUploaderService.startActionAddEvent(context, event);
+
+        // Start background location service
         Log.i(TAG, "Starting location updates");
         BackgroundLocationService.start(context);
     }
 
     public void stopRace(Context context) {
+        // Stop background location service
         Log.i(TAG, "Stopping location updates");
-        BackgroundLocationService.stop(context);
+        boolean wasRunning = BackgroundLocationService.stop(context);
+
+        // Create new stop race event
+        if (wasRunning) {
+            Event event = new Event(context, Event.EVENTTYPE_STOPRACE, new HashMap(0));
+            EventUploaderService.startActionAddEvent(context, event);
+            EventUploaderService.startActionUpload(context);
+        }
     }
 
     public void onLocationChanged(Context context, Location location) {
