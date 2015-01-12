@@ -3,7 +3,9 @@ package cz.machalik.bcthesis.dencesty.events;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.BatteryManager;
+import android.preference.PreferenceManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +32,7 @@ public class Event implements Serializable {
     public static final String EVENTTYPE_WARNING = "Warning";
     public static final String EVENTTYPE_LOG = "Log";
 
-    private static int eventIdCounter = 0;
+    private static final String EVENT_ID_COUNTER_KEY = "cz.machalik.bcthesis.dencesty.Event.eventIdCounter";
 
     private int eventId;
     private String type;
@@ -43,8 +45,6 @@ public class Event implements Serializable {
         this.type = type;
         this.data = data;
 
-        this.eventId = eventIdCounter++; // TODO: ukládání i mezi spuštěními aplikace
-
         // Obtain battery info:
         Intent batteryIntent = context.getApplicationContext().registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
@@ -55,6 +55,13 @@ public class Event implements Serializable {
         this.batteryState = WebAPI.convertBatteryStatus(status, plugged);
 
         this.timestamp = WebAPI.DATE_FORMAT.format(new Date());
+
+        // Obtain proper event id from shared preferences:
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        this.eventId = sharedPreferences.getInt(EVENT_ID_COUNTER_KEY, 0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(EVENT_ID_COUNTER_KEY, this.eventId + 1);
+        editor.commit();
     }
 
     public JSONObject toJSONObject() {
