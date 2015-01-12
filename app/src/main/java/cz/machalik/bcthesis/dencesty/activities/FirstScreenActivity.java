@@ -47,7 +47,7 @@ public class FirstScreenActivity extends Activity {
     /**
      * Handles the Start Updates button and requests start of location updates.
      */
-    private void onStartRaceButtonHandler(View view) {
+    protected void onStartRaceButtonHandler(View view) {
         // Requests location updates from the BackgroundLocationService.
         RaceModel.getInstance().startRace(this);
 

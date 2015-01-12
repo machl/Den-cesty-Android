@@ -9,39 +9,13 @@
     android:clickable="true"
     android:focusableInTouchMode="true">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start"
-        android:id="@+id/start_updates_button"
-        android:onClick="startUpdatesButtonHandler"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Stop"
-        android:id="@+id/stop_updates_button"
-        android:onClick="stopUpdatesButtonHandler"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Refresh Race Info"
-        android:id="@+id/refreshButton"
-        android:layout_centerHorizontal="true"
-        android:onClick="refreshButtonHandler" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="-1 m"
-        android:id="@+id/distanceTextView"
-        android:layout_below="@+id/refreshButton"
+        android:id="@+id/distance_textview"
+        android:layout_below="@+id/refresh_view"
         android:layout_centerHorizontal="true" />
 
     <TextView
@@ -49,17 +23,48 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="-1 km/h"
-        android:id="@+id/avgSpeedTextView"
-        android:layout_below="@+id/distanceTextView"
+        android:id="@+id/avgspeed_textview"
+        android:layout_below="@+id/distance_textview"
         android:layout_centerHorizontal="true" />
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/walkersListView"
+        android:id="@+id/walkers_listview"
         android:layout_centerHorizontal="true"
-        android:layout_above="@+id/start_updates_button"
-        android:layout_below="@+id/avgSpeedTextView"
+        android:layout_below="@+id/avgspeed_textview"
         android:choiceMode="none" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="End race"
+        android:id="@+id/endrace_button"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <FrameLayout
+        android:id="@+id/refresh_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/endrace_button"
+        android:layout_centerHorizontal="true" >
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/refresh_progress"
+            android:layout_alignBottom="@+id/refresh_button"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refresh Race Info"
+            android:id="@+id/refresh_button"
+            android:layout_below="@+id/endrace_button"
+            android:layout_centerHorizontal="true" />
+    </FrameLayout>
 
 </RelativeLayout>
