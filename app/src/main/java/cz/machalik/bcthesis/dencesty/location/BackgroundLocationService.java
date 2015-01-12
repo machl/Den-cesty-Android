@@ -29,7 +29,6 @@ import cz.machalik.bcthesis.dencesty.model.RaceModel;
 public class BackgroundLocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
                                                                   GoogleApiClient.OnConnectionFailedListener,
                                                                   LocationListener {
-
     protected static final String TAG = "BackgLocService";
 
     /**

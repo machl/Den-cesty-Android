@@ -30,39 +30,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
-        android:id="@+id/login_button"
-        android:nestedScrollingEnabled="false"
-        android:onClick="loginButtonHandler"
-        android:layout_below="@+id/passwordTextField"
-        android:layout_centerHorizontal="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textEmailAddress"
-        android:ems="10"
-        android:id="@+id/emailTextField"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="lukas@machalik.cz" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:id="@+id/passwordTextField"
-        android:layout_below="@+id/emailTextField"
-        android:layout_centerHorizontal="true"
-        android:text="test" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="Refresh Race Info"
         android:id="@+id/refreshButton"
-        android:layout_below="@+id/login_button"
         android:layout_centerHorizontal="true"
         android:onClick="refreshButtonHandler" />
 

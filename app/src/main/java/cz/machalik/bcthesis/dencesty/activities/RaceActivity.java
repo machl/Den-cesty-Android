@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -26,9 +25,6 @@ public class RaceActivity extends ActionBarActivity {
 
     protected Button mStartUpdatesButton;
     protected Button mStopUpdatesButton;
-    protected Button loginButton;
-    protected EditText emailTextField;
-    protected EditText passwordTextField;
     protected Button refreshButton;
     protected TextView distanceTextView;
     protected TextView avgSpeedTextView;
@@ -47,21 +43,6 @@ public class RaceActivity extends ActionBarActivity {
 
         mStartUpdatesButton = (Button) findViewById(R.id.start_updates_button);
         mStopUpdatesButton = (Button) findViewById(R.id.stop_updates_button);
-
-        emailTextField = (EditText) findViewById(R.id.emailTextField);
-        passwordTextField = (EditText) findViewById(R.id.passwordTextField);
-        loginButton = (Button) findViewById(R.id.login_button);
-
-        View.OnFocusChangeListener ofcl = new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    hideKeyboard(v);
-                }
-            }
-        };
-        emailTextField.setOnFocusChangeListener(ofcl);
-        passwordTextField.setOnFocusChangeListener(ofcl);
 
         refreshButton = (Button) findViewById(R.id.refreshButton);
 
@@ -96,12 +77,6 @@ public class RaceActivity extends ActionBarActivity {
             setButtonsEnabledState();
             stopLocationUpdates();
         }
-    }
-
-    public void loginButtonHandler(View view) {
-        // TODO: zabezpečit proti několikanásobnému zmáčknutí
-        new LoginAsyncTask(this).execute(emailTextField.getText().toString(),
-                                         passwordTextField.getText().toString());
     }
 
     public void refreshButtonHandler(View view) {
@@ -168,35 +143,6 @@ public class RaceActivity extends ActionBarActivity {
         super.onDestroy();
     }
 
-    private class LoginAsyncTask extends AsyncTask<String, Void, Boolean> {
-
-        private Context context;
-        public LoginAsyncTask (Context context){
-            this.context = context;
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            if (params.length != 2) {
-                Log.e(TAG, "Wrong number of params on execute method of " + getClass().getName());
-                return false;
-            }
-
-            String email = params[0];
-            String password = params[1];
-
-            return RaceModel.getInstance().login(context, email, password);
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (success)
-                Log.i(TAG, "Successful login");
-            else
-                Log.i(TAG, "Failed login");
-        }
-    }
-
     private class RaceInfoUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
         private Context context;
@@ -227,12 +173,6 @@ public class RaceActivity extends ActionBarActivity {
 
         walkersListView.setAdapter(new WalkersListAdapter(this));
     }
-
-    private void hideKeyboard(View view) {
-        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
 
     /*
     @Override
