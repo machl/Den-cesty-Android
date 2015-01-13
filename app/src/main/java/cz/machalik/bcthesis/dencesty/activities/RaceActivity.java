@@ -1,15 +1,13 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -36,11 +34,10 @@ public class RaceActivity extends Activity {
 
     // UI references.
     private Button mEndraceButton;
-    private Button mRefreshButton;
+    private SwipeRefreshLayout mSwipeContainer;
     private TextView mDistanceTextView;
     private TextView mAvgSpeedTextView;
     private ListView mWalkersListView;
-    private View mProgressView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +52,15 @@ public class RaceActivity extends Activity {
             }
         });
 
-        mRefreshButton = (Button) findViewById(R.id.refresh_button);
-        mRefreshButton.setOnClickListener(new View.OnClickListener() {
+        mSwipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        mSwipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onClick(View v) {
-                attemptRefresh();
+            public void onRefresh() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override public void run() {
+                        attemptRefresh();
+                    }
+                }, 3000);
             }
         });
 
@@ -67,8 +68,6 @@ public class RaceActivity extends Activity {
         mAvgSpeedTextView = (TextView) findViewById(R.id.avgspeed_textview);
 
         mWalkersListView = (ListView) findViewById(R.id.walkers_listview);
-
-        mProgressView = findViewById(R.id.refresh_progress);
     }
 
     protected void showDialogToEndRace() {
@@ -116,45 +115,9 @@ public class RaceActivity extends Activity {
 
         // Show a progress spinner, and kick off a background task to
         // perform the race info refresh attempt.
-        showProgress(true);
+        // showProgress(true);
         mRefreshTask = new RaceInfoUpdateAsyncTask(this);
         mRefreshTask.execute();
-    }
-
-    /**
-     * Shows the progress UI and hides the refresh button.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mRefreshButton.setVisibility(show ? View.GONE : View.VISIBLE);
-            mRefreshButton.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mRefreshButton.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mRefreshButton.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
     }
 
     @Override
@@ -165,6 +128,7 @@ public class RaceActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+        attemptRefresh();
     }
 
     @Override
@@ -222,6 +186,10 @@ public class RaceActivity extends Activity {
             mRefreshTask = null;
             showProgress(false);
         }
+    }
+
+    private void showProgress(final boolean show) {
+        mSwipeContainer.setRefreshing(show);
     }
 
 
