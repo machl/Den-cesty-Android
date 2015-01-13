@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
+import cz.machalik.bcthesis.dencesty.activities.RaceActivity;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
@@ -103,6 +104,8 @@ public class EventUploaderService extends IntentService {
         Log.i(TAG, "New event: " + event.toString());
         FileLogger.log(TAG, "New event: " + event.toString());
         eventQueue.add(event);
+
+        RaceActivity.updateUnsentEventsCounter(this, eventQueue.size());
     }
 
     /**
@@ -158,6 +161,8 @@ public class EventUploaderService extends IntentService {
         FileLogger.log(TAG, message);
 
         eventQueue.remove(ids);
+
+        RaceActivity.updateUnsentEventsCounter(this, eventQueue.size());
     }
 
 

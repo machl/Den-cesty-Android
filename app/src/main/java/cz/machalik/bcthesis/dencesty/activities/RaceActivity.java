@@ -2,11 +2,14 @@ package cz.machalik.bcthesis.dencesty.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -27,10 +30,19 @@ public class RaceActivity extends Activity {
 
     protected static final String TAG = "RaceActivity";
 
+    private static final String ACTION_UPDATE_LOCATION_COUNTER = "cz.machalik.bcthesis.dencesty.action.UPDATE_LOCATION_COUNTER";
+    private static final String ACTION_UPDATE_UNSENT_COUNTER = "cz.machalik.bcthesis.dencesty.action.UPDATE_UNSENT_COUNTER";
+
+    private static final String EXTRA_NUM_OF_LOCATION_UPDATES = "cz.machalik.bcthesis.dencesty.extra.NUM_OF_LOCATION_UPDATES";
+    private static final String EXTRA_NUM_OF_UNSENT_EVENTS = "cz.machalik.bcthesis.dencesty.extra.NUM_OF_UNSENT_EVENTS";
+
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
     private RaceInfoUpdateAsyncTask mRefreshTask = null;
+
+    private BroadcastReceiver mUnsentCounterReceiver;
+    private BroadcastReceiver mLocationUpdatesCounterReceiver;
 
     // UI references.
     private Button mEndraceButton;
@@ -38,6 +50,8 @@ public class RaceActivity extends Activity {
     private TextView mDistanceTextView;
     private TextView mAvgSpeedTextView;
     private ListView mWalkersListView;
+    private TextView mUnsentCounter;
+    private TextView mLocationUpdatesCounter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,18 +70,44 @@ public class RaceActivity extends Activity {
         mSwipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new Handler().postDelayed(new Runnable() {
-                    @Override public void run() {
-                        attemptRefresh();
-                    }
-                }, 3000);
+                attemptRefresh();
             }
         });
 
         mDistanceTextView = (TextView) findViewById(R.id.distance_textview);
         mAvgSpeedTextView = (TextView) findViewById(R.id.avgspeed_textview);
+        mUnsentCounter = (TextView) findViewById(R.id.unsent_textview);
+        mLocationUpdatesCounter = (TextView) findViewById(R.id.loccounter_textview);
 
         mWalkersListView = (ListView) findViewById(R.id.walkers_listview);
+
+        // Register broadcast receiver on unsent events counter updates
+        mUnsentCounterReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(ACTION_UPDATE_UNSENT_COUNTER)) {
+                    int numOfUnsentEvents = intent.getIntExtra(EXTRA_NUM_OF_UNSENT_EVENTS, 0);
+                    mUnsentCounter.setText(""+numOfUnsentEvents);
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mUnsentCounterReceiver,
+                        new IntentFilter(ACTION_UPDATE_UNSENT_COUNTER));
+
+        // Register broadcast receiver on location counter updates
+        mLocationUpdatesCounterReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(ACTION_UPDATE_LOCATION_COUNTER)) {
+                    int numOfLocationUpdates = intent.getIntExtra(EXTRA_NUM_OF_LOCATION_UPDATES, 0);
+                    mLocationUpdatesCounter.setText(""+numOfLocationUpdates);
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mLocationUpdatesCounterReceiver,
+                        new IntentFilter(ACTION_UPDATE_LOCATION_COUNTER));
     }
 
     protected void showDialogToEndRace() {
@@ -144,6 +184,8 @@ public class RaceActivity extends Activity {
     @Override
     protected void onDestroy() {
         stopLocationUpdates();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mUnsentCounterReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocationUpdatesCounterReceiver);
         super.onDestroy();
     }
 
@@ -200,4 +242,15 @@ public class RaceActivity extends Activity {
         mWalkersListView.setAdapter(new WalkersListAdapter(this));
     }
 
+    public static void updateLocationCounter(Context context, int numOfLocationUpdates) {
+        Intent intent = new Intent(ACTION_UPDATE_LOCATION_COUNTER);
+        intent.putExtra(EXTRA_NUM_OF_LOCATION_UPDATES, numOfLocationUpdates);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
+
+    public static void updateUnsentEventsCounter(Context context, int numOfUnsentEvents) {
+        Intent intent = new Intent(ACTION_UPDATE_UNSENT_COUNTER);
+        intent.putExtra(EXTRA_NUM_OF_UNSENT_EVENTS, numOfUnsentEvents);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
 }

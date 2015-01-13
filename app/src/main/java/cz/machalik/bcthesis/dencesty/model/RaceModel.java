@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.machalik.bcthesis.dencesty.activities.RaceActivity;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
@@ -112,6 +113,7 @@ public class RaceModel {
                 ' ' + verAcc + ' ' + timestamp;
         //Log.i(TAG, info);
         FileLogger.log(TAG, info);*/
+        RaceActivity.updateLocationCounter(context, numOfLocationUpdates);
 
         Map dataMap = new HashMap(10);
         dataMap.put("latitude", latitude);
