@@ -1,7 +1,6 @@
 package cz.machalik.bcthesis.dencesty.other;
 
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -44,12 +43,12 @@ public class FileLogger {
                 // We can only read the media
                 mExternalStorageAvailable = true;
                 mExternalStorageWritable = false;
-                Log.e("FileLogger", "External storage is not writable");
+                //Log.e("FileLogger", "External storage is not writable");
             } else {
                 // Something else is wrong. It may be one of many other states, but all we need
                 //  to know is we can neither read nor write
                 mExternalStorageAvailable = mExternalStorageWritable = false;
-                Log.e("FileLogger", "External storage not available");
+                //Log.e("FileLogger", "External storage not available");
             }
 
             if (mExternalStorageAvailable && mExternalStorageWritable) {
@@ -65,7 +64,7 @@ public class FileLogger {
             try {
                 logFile.createNewFile();
             } catch (IOException e) {
-                Log.e("FileLogger", "Creating new log file failed");
+                //Log.e("FileLogger", "Creating new log file failed");
                 e.printStackTrace();
                 ready = false;
             }
@@ -81,7 +80,7 @@ public class FileLogger {
             buf.append(text);
             buf.newLine();
         } catch (IOException e) {
-            Log.e("FileLogger", "Appending to log file failed");
+            //Log.e("FileLogger", "Appending to log file failed");
             e.printStackTrace();
             ready = false;
         } finally {

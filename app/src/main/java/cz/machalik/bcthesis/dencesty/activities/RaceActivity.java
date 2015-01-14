@@ -11,7 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -220,10 +219,10 @@ public class RaceActivity extends Activity {
             showProgress(false);
 
             if (success) {
-                Log.i(TAG, "Successful RaceInfoUpdate");
+                //Log.i(TAG, "Successful RaceInfoUpdate");
                 updateRaceInfoUI();
             } else {
-                Log.i(TAG, "Failed RaceInfoUpdate");
+                //Log.i(TAG, "Failed RaceInfoUpdate");
             }
         }
 

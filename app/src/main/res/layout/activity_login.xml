@@ -35,7 +35,7 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="@string/please_login"
                 android:id="@+id/textView2"
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="14dp" />
 
             <EditText android:id="@+id/email_textfield" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:hint="@string/prompt_email"

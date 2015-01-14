@@ -7,7 +7,6 @@ import android.location.Location;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -34,7 +33,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5 * 60 * 1000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10 * 1000; //5 * 60 * 1000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -96,7 +95,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
         }
 
         // Build GoogleApiClient
-        Log.i(TAG, "Building GoogleApiClient");
+        //Log.i(TAG, "Building GoogleApiClient");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -161,7 +160,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
 
     @Override
     public void onConnected(Bundle bundle) {
-        Log.i(TAG, "Connected to GoogleApiClient");
+        //Log.i(TAG, "Connected to GoogleApiClient");
         startLocationUpdates();
     }
 
@@ -169,7 +168,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     public void onConnectionSuspended(int i) {
         // The connection to Google Play services was lost for some reason. We call connect() to
         // attempt to re-establish the connection.
-        Log.i(TAG, "Connection suspended");
+        //Log.i(TAG, "Connection suspended");
         mGoogleApiClient.connect();
     }
 
@@ -177,7 +176,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     public void onConnectionFailed(ConnectionResult result) {
         // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
         // onConnectionFailed.
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        //Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
         // if (result.hasResolution()) {}
     }
 

@@ -3,7 +3,6 @@ package cz.machalik.bcthesis.dencesty.events;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -101,7 +100,7 @@ public class EventUploaderService extends IntentService {
      * parameters.
      */
     private void handleActionAddEvent(Event event) {
-        Log.i(TAG, "New event: " + event.toString());
+        //Log.i(TAG, "New event: " + event.toString());
         FileLogger.log(TAG, "New event: " + event.toString());
         eventQueue.add(event);
 
@@ -135,18 +134,18 @@ public class EventUploaderService extends IntentService {
 
                     } catch (JSONException e) {
                         String message = "Event upload response: JSONException: " + e.getLocalizedMessage();
-                        Log.e(TAG, message);
+                        //Log.e(TAG, message);
                         FileLogger.log(TAG, message);
                         e.printStackTrace();
                     }
                 } else {
                     String message = "Event upload response: Wrong response: " + jsonResponse.toString();
-                    Log.e(TAG, message);
+                    //Log.e(TAG, message);
                     FileLogger.log(TAG, message);
                 }
             }
         } else {
-            Log.i(TAG, "Event queue upload failed: Queue is empty!");
+            //Log.i(TAG, "Event queue upload failed: Queue is empty!");
         }
     }
 
@@ -157,7 +156,7 @@ public class EventUploaderService extends IntentService {
     private void handleActionRemoveEvents(int[] ids) {
         String message = "Removing events: " + Arrays.toString(ids) +
                          " Remaining count: " + (eventQueue.size()-ids.length);
-        Log.i(TAG, message);
+        //Log.i(TAG, message);
         FileLogger.log(TAG, message);
 
         eventQueue.remove(ids);

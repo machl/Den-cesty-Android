@@ -1,7 +1,6 @@
 package cz.machalik.bcthesis.dencesty.webapi;
 
 import android.os.BatteryManager;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,9 +26,9 @@ import cz.machalik.bcthesis.dencesty.other.FileLogger;
 public class WebAPI {
     protected static final String TAG = "WebAPI";
 
-    public static final String URL_WEBSERVER = "http://46.13.199.141:3000";
+    //public static final String URL_WEBSERVER = "http://46.13.199.141:3000";
     //public static final String URL_WEBSERVER = "http://machalik.kolej.mff.cuni.cz:3000";
-    //public static final String URL_WEBSERVER = "http://www.dencesty.cz"; // must be with 'www.' !
+    public static final String URL_WEBSERVER = "http://www.dencesty.cz"; // must be with 'www.' !
 
     public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/race/login";
     public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/events/create/%d";
@@ -72,24 +71,24 @@ public class WebAPI {
 
             } else {
                 String message = "Login handler: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
-                Log.e(TAG, message);
+                //Log.e(TAG, message);
                 FileLogger.log(TAG, message);
                 // TODO: Create error event
             }
 
         } catch (MalformedURLException e) {
             String message = "Login handler: MalformedURLException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } catch (IOException e) {
             String message = "Login handler: IOException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             //e.printStackTrace();
         } catch (JSONException e) {
             String message = "Login handler: JSONException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } finally {
@@ -103,7 +102,7 @@ public class WebAPI {
 
     public static JSONObject synchronousEventHandlerRequest(JSONArray eventsAsJson) {
         if (!RaceModel.getInstance().isLogged()) {
-            Log.e(TAG, "User is not logged to do synchronousEventHandlerRequest!");
+            //Log.e(TAG, "User is not logged to do synchronousEventHandlerRequest!");
             return null;
         }
 
@@ -141,24 +140,24 @@ public class WebAPI {
 
             } else {
                 String message = "Event handler: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
-                Log.e(TAG, message);
+                //Log.e(TAG, message);
                 FileLogger.log(TAG, message);
                 // TODO: Create error event
             }
 
         } catch (MalformedURLException e) {
             String message = "Event handler: MalformedURLException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } catch (IOException e) {
             String message = "Event handler: IOException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             //e.printStackTrace();
         } catch (JSONException e) {
             String message = "Event handler: JSONException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } finally {
@@ -172,7 +171,7 @@ public class WebAPI {
 
     public static JSONObject synchronousRaceInfoUpdateRequest() {
         if (!RaceModel.getInstance().isLogged()) {
-            Log.e(TAG, "User is not logged to do synchronousRaceInfoUpdateRequest!");
+            //Log.e(TAG, "User is not logged to do synchronousRaceInfoUpdateRequest!");
             return null;
         }
 
@@ -206,24 +205,24 @@ public class WebAPI {
 
             } else {
                 String message = "Race info update: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
-                Log.e(TAG, message);
+                //Log.e(TAG, message);
                 FileLogger.log(TAG, message);
                 // TODO: Create error event
             }
 
         } catch (MalformedURLException e) {
             String message = "Race info update: MalformedURLException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } catch (IOException e) {
             String message = "Race info update: IOException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             //e.printStackTrace();
         } catch (JSONException e) {
             String message = "Race info update: JSONException: " + e.getLocalizedMessage();
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } finally {

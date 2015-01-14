@@ -3,7 +3,6 @@ package cz.machalik.bcthesis.dencesty.model;
 import android.content.Context;
 import android.location.Location;
 import android.os.Build;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,13 +74,13 @@ public class RaceModel {
         EventUploaderService.startActionAddEvent(context, event);
 
         // Start background location service
-        Log.i(TAG, "Starting location updates");
+        //Log.i(TAG, "Starting location updates");
         BackgroundLocationService.start(context);
     }
 
     public void stopRace(Context context) {
         // Stop background location service
-        Log.i(TAG, "Stopping location updates");
+        //Log.i(TAG, "Stopping location updates");
         boolean wasRunning = BackgroundLocationService.stop(context);
 
         // Create new stop race event
@@ -142,7 +141,7 @@ public class RaceModel {
                 onSuccessfulLogin(context, jsonResponse);
                 return true;
             } else {
-                Log.i(TAG, "Login: wrong email or password");
+                //Log.i(TAG, "Login: wrong email or password");
                 return false;
             }
         }
@@ -153,7 +152,7 @@ public class RaceModel {
     protected void onSuccessfulLogin(Context context, JSONObject jsonData) {
         if (!jsonData.has("id") || !jsonData.has("name") || !jsonData.has("surname") || !jsonData.has("username")) {
             String message = "Response login missing info";
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             return;
         }
@@ -192,7 +191,7 @@ public class RaceModel {
                 !jsonData.has("numWalkersBehind") || !jsonData.has("numWalkersEnded") ||
                 !jsonData.has("walkersAhead") || !jsonData.has("walkersBehind")) {
             String message = "Response RaceInfo missing some entries";
-            Log.e(TAG, message);
+            //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             return;
         }
