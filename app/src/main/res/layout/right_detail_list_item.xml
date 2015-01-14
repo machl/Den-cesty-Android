@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="left|center_vertical"
-        android:textSize="18dp" />
+        android:textSize="18sp" />
 
     <TextView android:id="@+id/detailTextLabel"
         android:text="0 m, 0 km/h"
@@ -25,6 +25,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="right|center_vertical"
-        android:textSize="18dp" />
+        android:textSize="18sp" />
 
 </LinearLayout>

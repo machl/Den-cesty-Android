@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">20. Den cesty</string>
-
-    <!-- Strings related to race activity -->
-    <string name="title_activity_race">Race progress</string>
+    <string name="app_name" translatable="false">20. Den cesty</string>
 
     <!-- Strings related to login activity -->
+    <string name="login_headline" translatable="false">20. Den cesty</string>
+    <string name="please_login">Please login: (same as on web)</string>
     <string name="title_activity_login">Sign in</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -18,5 +17,22 @@
 
     <!-- Strings related to firstscreen activity -->
     <string name="title_activity_first_screen">Welcome to Den cesty</string>
+    <string name="den_cesty_logo">Race logo</string>
+    <string name="start_race">Start race</string>
+    <string name="gps_network_not_enabled">Location services are disabled. Please, go to settings and enable GPS location provider.</string>
+    <string name="open_location_settings">Location settings</string>
+
+    <!-- Strings related to race activity -->
+    <string name="title_activity_race">Race progress</string>
+    <string name="are_you_sure_end_race">Are you sure that you want end race?</string>
+    <string name="end_race">End race</string>
+    <string name="cancel">Cancel</string>
+    <string name="elapsed_distance">Elapsed distance:</string>
+    <string name="avg_speed">Average speed:</string>
+    <string name="unsent_messages">Unsent messages:</string>
+    <string name="num_of_location_updates">Num of location updates:</string>
+    <string name="other_competitors">Other competitors:</string>
+    <string name="distance_comma_speed">distance, speed</string>
+    <string name="end_race_button">End race</string>
 
 </resources>

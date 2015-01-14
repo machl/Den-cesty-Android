@@ -18,7 +18,7 @@ import java.util.Date;
  */
 public class FileLogger {
 
-    public static final String LOG_FILE = "/den-cesty-log.txt";
+    public static final String LOG_FILE = "/den-cesty-20-log.txt";
 
     private static final File logFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + LOG_FILE);
 

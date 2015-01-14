@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_sign_in">Přihlásit se</string>
+    <string name="action_sign_in_short">Přihlásit</string>
+    <string name="are_you_sure_end_race">Opravdu chcete ukončit závod?</string>
+    <string name="avg_speed">Průměrná rychlost:</string>
+    <string name="cancel">Zrušit</string>
+    <string name="den_cesty_logo">Den cesty logo</string>
+    <string name="distance_comma_speed">vzdálenost, rychlost</string>
+    <string name="elapsed_distance">Vzdálenost:</string>
+    <string name="end_race">Ukončit závod</string>
+    <string name="end_race_button">Ukončit závod</string>
+    <string name="error_field_required">Není vyplněn e-mail</string>
+    <string name="error_incorrect_password">Heslo nebo email nejsou správně</string>
+    <string name="error_invalid_email">Toto není platný e-mail</string>
+    <string name="error_invalid_password">Zadejte heslo</string>
+    <string name="gps_network_not_enabled">Polohové služby jsou vypnuty. Přejděte, prosím, do nastavení služeb pro zjišť. polohy a zapněte GPS.</string>
+    <string name="num_of_location_updates">Počet aktualizací polohy:</string>
+    <string name="open_location_settings">Nastavení</string>
+    <string name="other_competitors">Ostatní závodníci:</string>
+    <string name="please_login">Přihlašte se prosím: (jako na webu)</string>
+    <string name="prompt_email">vas@email.cz</string>
+    <string name="prompt_password">heslo</string>
+    <string name="start_race">Start závodu</string>
+    <string name="title_activity_first_screen">Vítejte na Dni cesty</string>
+    <string name="title_activity_login">Přihlásit se</string>
+    <string name="title_activity_race">Stav v závodě</string>
+    <string name="unsent_messages">Neodeslaných zpráv:</string>
+</resources>

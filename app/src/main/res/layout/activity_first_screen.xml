@@ -23,7 +23,8 @@
                 android:layout_centerHorizontal="true"
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
-                android:src="@drawable/wide_logo" />
+                android:src="@drawable/wide_logo"
+                android:contentDescription="@string/den_cesty_logo" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -50,7 +51,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start race"
+                android:text="@string/start_race"
                 android:id="@+id/start_race_button"
                 android:layout_below="@+id/username_textview"
                 android:layout_centerHorizontal="true"

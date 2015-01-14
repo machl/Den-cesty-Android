@@ -22,18 +22,18 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="20. Den cesty"
+                android:text="@string/login_headline"
                 android:id="@+id/textView"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center"
-                android:textSize="36dp"
+                android:textSize="36sp"
                 android:layout_marginTop="10dp" />
 
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Please login: (same as on web)"
+                android:text="@string/please_login"
                 android:id="@+id/textView2"
                 android:layout_marginTop="16dp" />
 

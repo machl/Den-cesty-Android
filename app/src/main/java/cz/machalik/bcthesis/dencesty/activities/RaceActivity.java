@@ -132,9 +132,9 @@ public class RaceActivity extends Activity {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure that you want end race?")
-                .setPositiveButton("End race", dialogClickListener)
-                .setNegativeButton("Cancel", dialogClickListener)
+        builder.setMessage(getString(R.string.are_you_sure_end_race))
+                .setPositiveButton(getString(R.string.end_race), dialogClickListener)
+                .setNegativeButton(getString(R.string.cancel), dialogClickListener)
                 .show();
     }
 
