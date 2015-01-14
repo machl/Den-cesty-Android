@@ -88,6 +88,10 @@ public class RaceActivity extends Activity {
                 if (intent.getAction().equals(ACTION_UPDATE_UNSENT_COUNTER)) {
                     int numOfUnsentEvents = intent.getIntExtra(EXTRA_NUM_OF_UNSENT_EVENTS, 0);
                     mUnsentCounter.setText(""+numOfUnsentEvents);
+                    if (numOfUnsentEvents > 0)
+                        mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_highlighted));
+                    else
+                        mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_default));
                 }
             }
         };

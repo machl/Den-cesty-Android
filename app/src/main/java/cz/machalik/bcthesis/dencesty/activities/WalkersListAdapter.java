@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 /**
@@ -64,15 +65,23 @@ public class WalkersListAdapter extends BaseAdapter {
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(android.R.layout.simple_list_item_2, null);
+            convertView = inflater.inflate(R.layout.right_detail_list_item, null);
         }
 
-        TextView text1 = (TextView) convertView.findViewById(android.R.id.text1);
-        TextView text2 = (TextView) convertView.findViewById(android.R.id.text2);
+        TextView text1 = (TextView) convertView.findViewById(R.id.textLabel);
+        TextView text2 = (TextView) convertView.findViewById(R.id.detailTextLabel);
 
         JSONObject item = getItem(position);
         text1.setText(item.optString("name"));
         text2.setText(String.format("%d m, %d km/h", item.optInt("distance"), item.optInt("speed")));
+
+        if (position < walkersAhead.length()) { // Ahead
+            convertView.setBackgroundColor(context.getResources().getColor(R.color.listitem_ahead));
+        } else if (position > walkersAhead.length()) { // Behind
+            convertView.setBackgroundColor(context.getResources().getColor(R.color.listitem_behind));
+        } else { // Me
+            convertView.setBackgroundColor(context.getResources().getColor(R.color.listitem_me));
+        }
 
         return convertView;
     }
