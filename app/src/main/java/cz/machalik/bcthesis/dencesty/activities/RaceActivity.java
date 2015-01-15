@@ -86,11 +86,7 @@ public class RaceActivity extends Activity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(ACTION_UPDATE_UNSENT_COUNTER)) {
                     int numOfUnsentEvents = intent.getIntExtra(EXTRA_NUM_OF_UNSENT_EVENTS, 0);
-                    mUnsentCounter.setText(""+numOfUnsentEvents);
-                    if (numOfUnsentEvents > 0)
-                        mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_highlighted));
-                    else
-                        mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_default));
+                    setUnsentCounter(numOfUnsentEvents);
                 }
             }
         };
@@ -104,7 +100,7 @@ public class RaceActivity extends Activity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(ACTION_UPDATE_LOCATION_COUNTER)) {
                     int numOfLocationUpdates = intent.getIntExtra(EXTRA_NUM_OF_LOCATION_UPDATES, 0);
-                    mLocationUpdatesCounter.setText(""+numOfLocationUpdates);
+                    setLocationUpdatesCounter(numOfLocationUpdates);
                 }
             }
         };
@@ -172,6 +168,8 @@ public class RaceActivity extends Activity {
     public void onResume() {
         super.onResume();
         attemptRefresh();
+        setUnsentCounter(RaceModel.getNumOfUnsentMessages());
+        setLocationUpdatesCounter(RaceModel.getNumOfLocationUpdates());
     }
 
     @Override
@@ -243,6 +241,18 @@ public class RaceActivity extends Activity {
         this.mAvgSpeedTextView.setText(String.format("%d km/h", RaceModel.getInstance().getRaceInfoAvgSpeed()));
 
         mWalkersListView.setAdapter(new WalkersListAdapter(this));
+    }
+
+    protected void setUnsentCounter(int numOfUnsentMessages) {
+        mUnsentCounter.setText(""+numOfUnsentMessages);
+        if (numOfUnsentMessages > 0)
+            mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_highlighted));
+        else
+            mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_default));
+    }
+
+    protected void setLocationUpdatesCounter(int numOfLocationUpdates) {
+        mLocationUpdatesCounter.setText(""+numOfLocationUpdates);
     }
 
     public static void updateLocationCounter(Context context, int numOfLocationUpdates) {

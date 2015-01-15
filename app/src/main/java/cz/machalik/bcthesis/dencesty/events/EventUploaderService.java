@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.util.Arrays;
 
 import cz.machalik.bcthesis.dencesty.activities.RaceActivity;
+import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
@@ -105,6 +106,7 @@ public class EventUploaderService extends IntentService {
         eventQueue.add(event);
 
         RaceActivity.updateUnsentEventsCounter(this, eventQueue.size());
+        RaceModel.setNumOfUnsentMessages(eventQueue.size());
     }
 
     /**
@@ -162,6 +164,7 @@ public class EventUploaderService extends IntentService {
         eventQueue.remove(ids);
 
         RaceActivity.updateUnsentEventsCounter(this, eventQueue.size());
+        RaceModel.setNumOfUnsentMessages(eventQueue.size());
     }
 
 
