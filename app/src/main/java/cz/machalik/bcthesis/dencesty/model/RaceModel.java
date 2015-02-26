@@ -53,7 +53,7 @@ public class RaceModel {
      * Race info entries
      */
     protected int raceInfoDistance;
-    protected int raceInfoAvgSpeed;
+    protected double raceInfoAvgSpeed;
     protected int raceInfoNumWalkersAhead;
     protected int raceInfoNumWalkersBehind;
     protected int raceInfoNumWalkersEnded;
@@ -202,7 +202,7 @@ public class RaceModel {
         }
 
         this.raceInfoDistance = jsonData.optInt("distance");
-        this.raceInfoAvgSpeed = jsonData.optInt("speed");
+        this.raceInfoAvgSpeed = jsonData.optDouble("speed");
         this.raceInfoNumWalkersAhead = jsonData.optInt("numWalkersAhead");
         this.raceInfoNumWalkersBehind = jsonData.optInt("numWalkersBehind");
         this.raceInfoNumWalkersEnded = jsonData.optInt("numWalkersEnded");
@@ -233,7 +233,7 @@ public class RaceModel {
         return raceInfoDistance;
     }
 
-    public int getRaceInfoAvgSpeed() {
+    public double getRaceInfoAvgSpeed() {
         return raceInfoAvgSpeed;
     }
 

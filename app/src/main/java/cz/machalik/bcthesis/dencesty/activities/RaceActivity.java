@@ -238,7 +238,7 @@ public class RaceActivity extends Activity {
 
     protected void updateRaceInfoUI() {
         this.mDistanceTextView.setText(String.format("%d m", RaceModel.getInstance().getRaceInfoDistance()));
-        this.mAvgSpeedTextView.setText(String.format("%d km/h", RaceModel.getInstance().getRaceInfoAvgSpeed()));
+        this.mAvgSpeedTextView.setText(String.format("%.2f km/h", RaceModel.getInstance().getRaceInfoAvgSpeed()));
 
         mWalkersListView.setAdapter(new WalkersListAdapter(this));
     }

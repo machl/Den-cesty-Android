@@ -73,7 +73,7 @@ public class WalkersListAdapter extends BaseAdapter {
 
         JSONObject item = getItem(position);
         text1.setText(item.optString("name"));
-        text2.setText(String.format("%d m, %d km/h", item.optInt("distance"), item.optInt("speed")));
+        text2.setText(String.format("%d m, %.2f km/h", item.optInt("distance"), item.optDouble("speed")));
 
         if (position < walkersAhead.length()) { // Ahead
             convertView.setBackgroundColor(context.getResources().getColor(R.color.listitem_ahead));
