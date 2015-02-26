@@ -65,6 +65,11 @@ public class RaceModel {
      */
     protected static int numOfLocationUpdates = 0;
 
+    /**
+     * Number of unsent messages so far.
+     */
+    protected static int numOfUnsentMessages = 0;
+
 
     public void startRace(Context context) {
         // Create new start race event
@@ -250,5 +255,17 @@ public class RaceModel {
 
     public JSONArray getRaceInfoWalkersBehind() {
         return raceInfoWalkersBehind;
+    }
+
+    public static void setNumOfUnsentMessages(int numOfUnsentMessages) {
+        RaceModel.numOfUnsentMessages = numOfUnsentMessages;
+    }
+
+    public static int getNumOfUnsentMessages() {
+        return numOfUnsentMessages;
+    }
+
+    public static int getNumOfLocationUpdates() {
+        return numOfLocationUpdates;
     }
 }
