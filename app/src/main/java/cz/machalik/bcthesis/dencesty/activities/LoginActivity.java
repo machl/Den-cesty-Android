@@ -54,7 +54,7 @@ public class LoginActivity extends Activity {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    attemptNewLogin();
                     return true;
                 }
                 return false;
@@ -65,12 +65,26 @@ public class LoginActivity extends Activity {
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                attemptNewLogin();
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+
+        attemptAutomaticLogin();
+    }
+
+    public void attemptAutomaticLogin() {
+        if (User.hasSavedCreditials(this)) {
+            String email = User.getSavedCreditialsEmail(this);
+            String password = User.getSavedCreditialsPassword(this);
+
+            mEmailView.setText(email);
+
+            performLoginTask(email, password);
+        }
     }
 
     /**
@@ -78,7 +92,7 @@ public class LoginActivity extends Activity {
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    public void attemptLogin() {
+    public void attemptNewLogin() {
         if (mAuthTask != null) {
             return;
         }
@@ -117,11 +131,7 @@ public class LoginActivity extends Activity {
             // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
-            mAuthTask = new UserLoginTask(this, email, password);
-            mAuthTask.execute((Void) null);
+            performLoginTask(email, password);
         }
     }
 
@@ -133,7 +143,7 @@ public class LoginActivity extends Activity {
      * Shows the progress UI and hides the login form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
+    private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
@@ -165,6 +175,20 @@ public class LoginActivity extends Activity {
         }
     }
 
+    /**
+     * Show a progress spinner, and kick off a background task to
+     * perform the user login attempt.
+     *
+     * @param email
+     * @param password
+     */
+    private void performLoginTask(String email, String password) {
+        showProgress(true);
+        mAuthTask = new UserLoginTask(this, email, password);
+        mAuthTask.execute((Void) null);
+    }
+
+
     private void onSuccessfulLogin() {
         Intent intent = new Intent(this, FirstScreenActivity.class);
         startActivity(intent);
@@ -174,7 +198,7 @@ public class LoginActivity extends Activity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    private class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final Context mContext;
         private final String mEmail;

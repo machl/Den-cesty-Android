@@ -1,7 +1,9 @@
 package cz.machalik.bcthesis.dencesty.model;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -30,14 +32,21 @@ public class User {
             boolean success = jsonResponse.optBoolean("success");
             if (success) {
                 onSuccessfulLogin(context, jsonResponse);
+                saveCreditials(context, email, password);
                 return true;
             } else {
                 Log.i(TAG, "Login: wrong email or password");
+                removeCreditials(context);
                 return false;
             }
         }
 
         return false;
+    }
+
+    public static void logout(Context context) {
+        isLogged = false;
+        removeCreditials(context);
     }
 
     public static boolean isLogged() {
@@ -56,8 +65,33 @@ public class User {
         return walkerName + " " + walkerSurname;
     }
 
+    public static boolean hasSavedCreditials(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        return sharedPreferences.contains(SHAREDPREFERENCES_EMAIL_KEY)
+                && sharedPreferences.contains(SHAREDPREFERENCES_PASSWORD_KEY);
+    }
+
+    /**
+     * Obtain email for login from shared preferences
+     */
+    public static String getSavedCreditialsEmail(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        return sharedPreferences.getString(SHAREDPREFERENCES_EMAIL_KEY, null);
+    }
+
+    /**
+     * Obtain password for login from shared preferences
+     */
+    public static String getSavedCreditialsPassword(Context context) { // TODO: change to token (http://stackoverflow.com/questions/1925486/android-storing-username-and-password)
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        return sharedPreferences.getString(SHAREDPREFERENCES_PASSWORD_KEY, null);
+    }
+
 
     /****************************** Private: ******************************/
+
+    private static final String SHAREDPREFERENCES_EMAIL_KEY = "cz.machalik.bcthesis.dencesty.User.email";
+    private static final String SHAREDPREFERENCES_PASSWORD_KEY = "cz.machalik.bcthesis.dencesty.User.password";
 
     /**
      * True, if user is successfully logged.
@@ -98,5 +132,19 @@ public class User {
         EventUploaderService.performUpload(context);
     }
 
+    private static void saveCreditials(Context context, String email, String password) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(SHAREDPREFERENCES_EMAIL_KEY, email);
+        editor.putString(SHAREDPREFERENCES_PASSWORD_KEY, password);
+        editor.commit();
+    }
 
+    private static void removeCreditials(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(SHAREDPREFERENCES_EMAIL_KEY);
+        editor.remove(SHAREDPREFERENCES_PASSWORD_KEY);
+        editor.commit();
+    }
 }
