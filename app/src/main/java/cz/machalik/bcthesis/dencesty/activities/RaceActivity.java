@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import cz.machalik.bcthesis.dencesty.R;
+import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 /**
@@ -26,14 +27,11 @@ import cz.machalik.bcthesis.dencesty.model.RaceModel;
  * Lukáš Machalík
  */
 public class RaceActivity extends Activity {
-
     protected static final String TAG = "RaceActivity";
 
     private static final String ACTION_UPDATE_LOCATION_COUNTER = "cz.machalik.bcthesis.dencesty.action.UPDATE_LOCATION_COUNTER";
-    private static final String ACTION_UPDATE_UNSENT_COUNTER = "cz.machalik.bcthesis.dencesty.action.UPDATE_UNSENT_COUNTER";
 
     private static final String EXTRA_NUM_OF_LOCATION_UPDATES = "cz.machalik.bcthesis.dencesty.extra.NUM_OF_LOCATION_UPDATES";
-    private static final String EXTRA_NUM_OF_UNSENT_EVENTS = "cz.machalik.bcthesis.dencesty.extra.NUM_OF_UNSENT_EVENTS";
 
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
@@ -84,15 +82,15 @@ public class RaceActivity extends Activity {
         mUnsentCounterReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(ACTION_UPDATE_UNSENT_COUNTER)) {
-                    int numOfUnsentEvents = intent.getIntExtra(EXTRA_NUM_OF_UNSENT_EVENTS, 0);
+                if (intent.getAction().equals(EventUploaderService.ACTION_EVENT_QUEUE_SIZE_CHANGED)) {
+                    int numOfUnsentEvents = intent.getIntExtra(EventUploaderService.EXTRA_EVENT_QUEUE_SIZE, 0);
                     setUnsentCounter(numOfUnsentEvents);
                 }
             }
         };
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mUnsentCounterReceiver,
-                        new IntentFilter(ACTION_UPDATE_UNSENT_COUNTER));
+                        new IntentFilter(EventUploaderService.ACTION_EVENT_QUEUE_SIZE_CHANGED));
 
         // Register broadcast receiver on location counter updates
         mLocationUpdatesCounterReceiver = new BroadcastReceiver() {
@@ -168,7 +166,7 @@ public class RaceActivity extends Activity {
     public void onResume() {
         super.onResume();
         attemptRefresh();
-        setUnsentCounter(RaceModel.getNumOfUnsentMessages());
+        setUnsentCounter(EventUploaderService.getEventQueueSize());
         setLocationUpdatesCounter(RaceModel.getNumOfLocationUpdates());
     }
 
@@ -261,9 +259,4 @@ public class RaceActivity extends Activity {
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
-    public static void updateUnsentEventsCounter(Context context, int numOfUnsentEvents) {
-        Intent intent = new Intent(ACTION_UPDATE_UNSENT_COUNTER);
-        intent.putExtra(EXTRA_NUM_OF_UNSENT_EVENTS, numOfUnsentEvents);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
 }

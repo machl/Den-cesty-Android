@@ -69,11 +69,6 @@ public class RaceModel {
      */
     protected static int numOfLocationUpdates = 0;
 
-    /**
-     * Number of unsent messages so far.
-     */
-    protected static int numOfUnsentMessages = 0;
-
     private BroadcastReceiver mLocationChangedReceiver;
 
 
@@ -82,7 +77,7 @@ public class RaceModel {
         Map dataMap = new HashMap(1);
         dataMap.put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
         Event event = new Event(context, Event.EVENTTYPE_STARTRACE, dataMap);
-        EventUploaderService.startActionAddEvent(context, event);
+        EventUploaderService.addEvent(context, event);
 
         // Register broadcast receiver on location updates
         mLocationChangedReceiver = new BroadcastReceiver() {
@@ -108,8 +103,8 @@ public class RaceModel {
         // Create new stop race event
         if (wasRunning) {
             Event event = new Event(context, Event.EVENTTYPE_STOPRACE, new HashMap(0));
-            EventUploaderService.startActionAddEvent(context, event);
-            EventUploaderService.startActionUpload(context);
+            EventUploaderService.addEvent(context, event);
+            EventUploaderService.performUpload(context);
         }
 
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mLocationChangedReceiver);
@@ -152,8 +147,8 @@ public class RaceModel {
 
         Event event = new Event(context, Event.EVENTTYPE_LOCATIONUPDATE, dataMap);
 
-        EventUploaderService.startActionAddEvent(context, event);
-        EventUploaderService.startActionUpload(context);
+        EventUploaderService.addEvent(context, event);
+        EventUploaderService.performUpload(context);
     }
 
     public boolean login(Context context, String email, String password) {
@@ -195,8 +190,8 @@ public class RaceModel {
 
         Event event = new Event(context, Event.EVENTTYPE_LOGIN, dataMap);
 
-        EventUploaderService.startActionAddEvent(context, event);
-        EventUploaderService.startActionUpload(context);
+        EventUploaderService.addEvent(context, event);
+        EventUploaderService.performUpload(context);
     }
 
     public boolean fetchRaceInfo(Context context) {
@@ -274,14 +269,6 @@ public class RaceModel {
 
     public JSONArray getRaceInfoWalkersBehind() {
         return raceInfoWalkersBehind;
-    }
-
-    public static void setNumOfUnsentMessages(int numOfUnsentMessages) {
-        RaceModel.numOfUnsentMessages = numOfUnsentMessages;
-    }
-
-    public static int getNumOfUnsentMessages() {
-        return numOfUnsentMessages;
     }
 
     public static int getNumOfLocationUpdates() {
