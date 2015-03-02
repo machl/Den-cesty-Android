@@ -4,9 +4,12 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -15,7 +18,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 /**
  * Inspired by:
@@ -30,10 +32,15 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
                                                                   LocationListener {
     protected static final String TAG = "BackgLocService";
 
+    
+    /****************************** Public constants: ******************************/
+
+    public static final String ACTION_LOCATION_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_LOCATION_CHANGED";
+
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5 * 60 * 1000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5 * 1000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -49,12 +56,16 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     //public static final int LOCATION_UPDATES_PRIORITY = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
     public static final int LOCATION_UPDATES_PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY;
 
+
+    /****************************** Public API: ******************************/
+
     /**
      * Starts this service.
      *
      * @see Service
      */
     public static void start(Context context) {
+        Log.i(TAG, "Starting location updates");
         Intent intent = new Intent(context, BackgroundLocationService.class);
         context.startService(intent);
     }
@@ -65,9 +76,24 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
      * @see Service
      */
     public static boolean stop(Context context) {
+        Log.i(TAG, "Stopping location updates");
         Intent intent = new Intent(context, BackgroundLocationService.class);
         return context.stopService(intent);
     }
+
+    public static boolean isLocationProviderEnabled(Context context) {
+        LocationManager service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
+        return service.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    public static Location getLastKnownLocation() {
+        return lastKnownLocation;
+    }
+
+    
+    /****************************** Private: ******************************/
+
+    private static Location lastKnownLocation = null;
 
     /**
      * Provides the entry point to Google Play services.
@@ -78,13 +104,6 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
      * Stores parameters for requests to the FusedLocationProviderApi.
      */
     protected LocationRequest mLocationRequest;
-
-    IBinder mBinder = new LocalBinder();
-    public class LocalBinder extends Binder {
-        public BackgroundLocationService getServerInstance() {
-            return BackgroundLocationService.this;
-        }
-    }
 
     @Override
     public void onCreate() {
@@ -155,7 +174,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
 
         mGoogleApiClient.connect();
 
-        return START_STICKY;
+        return Service.START_STICKY;
     }
 
     @Override
@@ -194,16 +213,25 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     }
 
     @Override
+    public void onLocationChanged(Location location) {
+        lastKnownLocation = location;
+
+        Intent intent = new Intent(ACTION_LOCATION_CHANGED);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+
+    /****************************** Service staff: ******************************/
+
+    IBinder mBinder = new LocalBinder();
+    public class LocalBinder extends Binder {
+        public BackgroundLocationService getServerInstance() {
+            return BackgroundLocationService.this;
+        }
+    }
+    @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service ?
         return mBinder;
     }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-        RaceModel.getInstance().onLocationChanged(this, location);
-    }
-
-
 }

@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -16,6 +15,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import cz.machalik.bcthesis.dencesty.R;
+import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 public class FirstScreenActivity extends Activity {
@@ -85,8 +85,7 @@ public class FirstScreenActivity extends Activity {
     }
 
     private boolean locationEnabled() {
-        LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
-        boolean enabled = service.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean enabled = BackgroundLocationService.isLocationProviderEnabled(this);
 
         if (!enabled) {
             DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {

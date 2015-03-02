@@ -1,8 +1,12 @@
 package cz.machalik.bcthesis.dencesty.model;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Build;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -70,6 +74,8 @@ public class RaceModel {
      */
     protected static int numOfUnsentMessages = 0;
 
+    private BroadcastReceiver mLocationChangedReceiver;
+
 
     public void startRace(Context context) {
         // Create new start race event
@@ -78,14 +84,25 @@ public class RaceModel {
         Event event = new Event(context, Event.EVENTTYPE_STARTRACE, dataMap);
         EventUploaderService.startActionAddEvent(context, event);
 
+        // Register broadcast receiver on location updates
+        mLocationChangedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(BackgroundLocationService.ACTION_LOCATION_CHANGED)) {
+                    onLocationChanged(context, BackgroundLocationService.getLastKnownLocation());
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(context)
+                .registerReceiver(mLocationChangedReceiver,
+                        new IntentFilter(BackgroundLocationService.ACTION_LOCATION_CHANGED));
+
         // Start background location service
-        //Log.i(TAG, "Starting location updates");
         BackgroundLocationService.start(context);
     }
 
     public void stopRace(Context context) {
         // Stop background location service
-        //Log.i(TAG, "Stopping location updates");
         boolean wasRunning = BackgroundLocationService.stop(context);
 
         // Create new stop race event
@@ -94,6 +111,8 @@ public class RaceModel {
             EventUploaderService.startActionAddEvent(context, event);
             EventUploaderService.startActionUpload(context);
         }
+
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mLocationChangedReceiver);
     }
 
     public void onLocationChanged(Context context, Location location) {
