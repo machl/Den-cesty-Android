@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
-import android.os.Build;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.json.JSONArray;
@@ -35,18 +34,6 @@ public class RaceModel {
     }
     private RaceModel() {} // TODO: ukládat info mezi spuštěními aplikace
 
-    /**
-     * True, if user is successfully logged.
-     */
-    protected boolean isLogged = false;
-
-    /**
-     * Info about logged user.
-     */
-    protected int walkerId;
-    protected String walkerName;
-    protected String walkerSurname;
-    protected String walkerUsername;
 
     /**
      * Represents a geographical location.
@@ -151,48 +138,7 @@ public class RaceModel {
         EventUploaderService.performUpload(context);
     }
 
-    public boolean login(Context context, String email, String password) {
-        JSONObject jsonResponse = WebAPI.synchronousLoginHandlerRequest(email, password);
 
-        if (jsonResponse != null) {
-            boolean success = jsonResponse.optBoolean("success");
-            if (success) {
-                onSuccessfulLogin(context, jsonResponse);
-                return true;
-            } else {
-                //Log.i(TAG, "Login: wrong email or password");
-                return false;
-            }
-        }
-
-        return false;
-    }
-
-    protected void onSuccessfulLogin(Context context, JSONObject jsonData) {
-        if (!jsonData.has("id") || !jsonData.has("name") || !jsonData.has("surname") || !jsonData.has("username")) {
-            String message = "Response login missing info";
-            //Log.e(TAG, message);
-            FileLogger.log(TAG, message);
-            return;
-        }
-
-        this.walkerId = jsonData.optInt("id");
-        this.walkerName = jsonData.optString("name");
-        this.walkerSurname = jsonData.optString("surname");
-        this.walkerUsername = jsonData.optString("username");
-        this.isLogged = true;
-
-        Map dataMap = new HashMap(10);
-        dataMap.put("systemName", Build.VERSION.RELEASE + " " + Build.VERSION.CODENAME);
-        dataMap.put("sdk", Integer.valueOf(Build.VERSION.SDK_INT));
-        dataMap.put("model", Build.MODEL);
-        // TODO: info o povolených polohových službách, internetu ...?
-
-        Event event = new Event(context, Event.EVENTTYPE_LOGIN, dataMap);
-
-        EventUploaderService.addEvent(context, event);
-        EventUploaderService.performUpload(context);
-    }
 
     public boolean fetchRaceInfo(Context context) {
         JSONObject jsonResponse = WebAPI.synchronousRaceInfoUpdateRequest();
@@ -226,22 +172,6 @@ public class RaceModel {
 
 
     /*** GETTERS & SETTERS ***/
-
-    public boolean isLogged() {
-        return isLogged;
-    }
-
-    public int getWalkerId() {
-        return walkerId;
-    }
-
-    public String getWalkerUsername() {
-        return walkerUsername;
-    }
-
-    public String getWalkerFullName() {
-        return walkerName + " " + walkerSurname;
-    }
 
     public int getRaceInfoDistance() {
         return raceInfoDistance;

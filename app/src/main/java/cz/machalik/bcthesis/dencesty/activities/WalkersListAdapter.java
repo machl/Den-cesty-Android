@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
+import cz.machalik.bcthesis.dencesty.model.User;
 
 /**
  * Lukáš Machalík
@@ -31,7 +32,7 @@ public class WalkersListAdapter extends BaseAdapter {
         this.walkersBehind = RaceModel.getInstance().getRaceInfoWalkersBehind();
         this.me = new JSONObject();
         try {
-            this.me.put("name", String.format("Já (%s)", RaceModel.getInstance().getWalkerUsername()));
+            this.me.put("name", String.format("Já (%s)", User.getWalkerUsername()));
             this.me.put("distance", RaceModel.getInstance().getRaceInfoDistance());
             this.me.put("speed", RaceModel.getInstance().getRaceInfoAvgSpeed());
         } catch (JSONException e) {

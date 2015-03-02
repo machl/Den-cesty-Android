@@ -19,7 +19,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import cz.machalik.bcthesis.dencesty.R;
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
+import cz.machalik.bcthesis.dencesty.model.User;
 
 /**
  * A login screen that offers login via email/password.
@@ -188,7 +188,7 @@ public class LoginActivity extends Activity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            return RaceModel.getInstance().login(mContext, mEmail, mPassword);
+            return User.attemptLogin(mContext, mEmail, mPassword);
         }
 
         @Override

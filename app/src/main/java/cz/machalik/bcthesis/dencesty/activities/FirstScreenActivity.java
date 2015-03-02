@@ -17,6 +17,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
+import cz.machalik.bcthesis.dencesty.model.User;
 
 public class FirstScreenActivity extends Activity {
 
@@ -48,8 +49,8 @@ public class FirstScreenActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
-        mFullnameTextView.setText(RaceModel.getInstance().getWalkerFullName());
-        mUsernameTextView.setText(RaceModel.getInstance().getWalkerUsername());
+        mFullnameTextView.setText(User.getWalkerFullName());
+        mUsernameTextView.setText(User.getWalkerUsername());
     }
 
     /**

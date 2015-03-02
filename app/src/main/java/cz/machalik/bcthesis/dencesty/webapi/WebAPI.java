@@ -17,7 +17,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
+import cz.machalik.bcthesis.dencesty.model.User;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
 
 /**
@@ -101,7 +101,7 @@ public class WebAPI {
     }
 
     public static JSONObject synchronousEventHandlerRequest(JSONArray eventsAsJson) {
-        if (!RaceModel.getInstance().isLogged()) {
+        if (!User.isLogged()) {
             //Log.e(TAG, "User is not logged to do synchronousEventHandlerRequest!");
             return null;
         }
@@ -109,7 +109,7 @@ public class WebAPI {
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(String.format(URL_EVENTHANDLER, RaceModel.getInstance().getWalkerId()));
+            URL url = new URL(String.format(URL_EVENTHANDLER, User.getWalkerId()));
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
@@ -170,7 +170,7 @@ public class WebAPI {
     }
 
     public static JSONObject synchronousRaceInfoUpdateRequest() {
-        if (!RaceModel.getInstance().isLogged()) {
+        if (!User.isLogged()) {
             //Log.e(TAG, "User is not logged to do synchronousRaceInfoUpdateRequest!");
             return null;
         }
@@ -178,7 +178,7 @@ public class WebAPI {
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(String.format(URL_RACEINFOUPDATE, RaceModel.getInstance().getWalkerId()));
+            URL url = new URL(String.format(URL_RACEINFOUPDATE, User.getWalkerId()));
             urlConnection = (HttpURLConnection) url.openConnection();
             //urlConnection.setDoInput(false);
             urlConnection.setDoOutput(true);
