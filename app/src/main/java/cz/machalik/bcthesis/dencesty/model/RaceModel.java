@@ -8,8 +8,6 @@ import android.location.Location;
 import android.support.v4.content.LocalBroadcastManager;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
@@ -35,9 +33,8 @@ public class RaceModel {
 
     public void startRace(Context context) {
         // Create new start race event
-        Map dataMap = new HashMap(1);
-        dataMap.put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
-        Event event = new Event(context, Event.EVENTTYPE_STARTRACE, dataMap);
+        Event event = new Event(context, this.raceId, Event.EVENTTYPE_STARTRACE);
+        event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
         EventUploaderService.addEvent(context, event);
 
         // Register broadcast receiver on location updates
@@ -63,7 +60,7 @@ public class RaceModel {
 
         // Create new stop race event
         if (wasRunning) {
-            Event event = new Event(context, Event.EVENTTYPE_STOPRACE, new HashMap(0));
+            Event event = new Event(context, this.raceId, Event.EVENTTYPE_STOPRACE);
             EventUploaderService.addEvent(context, event);
             EventUploaderService.performUpload(context);
         }
@@ -152,21 +149,19 @@ public class RaceModel {
         //Log.i(TAG, info);
         FileLogger.log(TAG, info);*/
 
-        Map dataMap = new HashMap(10);
-        dataMap.put("latitude", latitude);
-        dataMap.put("longitude", longitude);
-        dataMap.put("altitude", altitude);
-        dataMap.put("course", course);
-        dataMap.put("speed", speed);
-        dataMap.put("horAcc", horAcc);
-        dataMap.put("verAcc", verAcc);
-        dataMap.put("timestamp", timestamp);
-        dataMap.put("counter", counter);
-        dataMap.put("provider", provider);
-        dataMap.put("distance", this.raceDistance);
-        dataMap.put("avgSpeed", this.raceAvgSpeed);
-
-        Event event = new Event(context, Event.EVENTTYPE_LOCATIONUPDATE, dataMap);
+        Event event = new Event(context, this.raceId, Event.EVENTTYPE_LOCATIONUPDATE);
+        event.getExtras().put("latitude", latitude);
+        event.getExtras().put("longitude", longitude);
+        event.getExtras().put("altitude", altitude);
+        event.getExtras().put("course", course);
+        event.getExtras().put("speed", speed);
+        event.getExtras().put("horAcc", horAcc);
+        event.getExtras().put("verAcc", verAcc);
+        event.getExtras().put("timestamp", timestamp);
+        event.getExtras().put("counter", counter);
+        event.getExtras().put("provider", provider);
+        event.getExtras().put("distance", this.raceDistance);
+        event.getExtras().put("avgSpeed", this.raceAvgSpeed);
 
         EventUploaderService.addEvent(context, event);
         EventUploaderService.performUpload(context);

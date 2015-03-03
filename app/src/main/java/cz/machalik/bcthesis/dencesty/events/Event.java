@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
@@ -19,7 +20,7 @@ import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 /**
  * Lukáš Machalík
  */
-public class Event implements Serializable { // TODO: extends HashMap, mit tak hezci interface pro pridavani informaci navic
+public class Event implements Serializable {
 
     // Types of event:
     public static final String EVENTTYPE_LOGIN = "LoginSuccess";
@@ -32,18 +33,26 @@ public class Event implements Serializable { // TODO: extends HashMap, mit tak h
     public static final String EVENTTYPE_WARNING = "Warning";
     public static final String EVENTTYPE_LOG = "Log";
 
+    private static final int UNKNOWN_RACE_ID = 0;
+
     private static final String EVENT_ID_COUNTER_KEY = "cz.machalik.bcthesis.dencesty.Event.eventIdCounter";
 
-    private int eventId;
-    private String type;
-    private Map data;
-    private int batteryLevel;
-    private int batteryState;
-    private String timestamp;
+    private final int eventId;
+    private final int raceId;
+    private final String type;
+    private final int batteryLevel;
+    private final int batteryState;
+    private final String timestamp;
+    private final Map extras;
 
-    public Event(Context context, String type, Map data) {
+    public Event(Context context, String type) {
+        this(context, UNKNOWN_RACE_ID, type);
+    }
+
+    public Event(Context context, int raceId, String type) {
         this.type = type;
-        this.data = data;
+        this.raceId = raceId;
+        this.extras = new HashMap();
 
         // Obtain battery info:
         Intent batteryIntent = context.getApplicationContext().registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -54,6 +63,7 @@ public class Event implements Serializable { // TODO: extends HashMap, mit tak h
         this.batteryLevel = (int) (((float)level / (float)scale) * 100.f);
         this.batteryState = WebAPI.convertBatteryStatus(status, plugged);
 
+        // Add unique timestamp
         this.timestamp = WebAPI.DATE_FORMAT.format(new Date());
 
         // Obtain proper event id from shared preferences:
@@ -69,8 +79,9 @@ public class Event implements Serializable { // TODO: extends HashMap, mit tak h
 
         try {
             ret.put("eventId", eventId);
+            ret.put("raceid", raceId);
             ret.put("type", type);
-            ret.put("data", new JSONObject(data));
+            ret.put("data", new JSONObject(extras));
             ret.put("batL", batteryLevel);
             ret.put("batS", batteryState);
             ret.put("time", timestamp);
@@ -84,11 +95,15 @@ public class Event implements Serializable { // TODO: extends HashMap, mit tak h
 
     @Override
     public String toString() {
-        return "Event[" + eventId + "] " + type + " " + timestamp + " " + batteryLevel + " " +
-                batteryState + " " + data.toString();
+        return "Event[" + eventId + "] " + raceId + " " + type + " " + timestamp + " " +
+                batteryLevel + " " + batteryState + " " + extras.toString();
     }
 
     public int getEventId() {
         return eventId;
+    }
+
+    public Map getExtras() {
+        return extras;
     }
 }

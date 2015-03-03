@@ -8,9 +8,6 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
@@ -120,13 +117,11 @@ public class User {
         walkerUsername = jsonData.optString("username");
         isLogged = true;
 
-        Map dataMap = new HashMap(10);
-        dataMap.put("systemName", Build.VERSION.RELEASE + " " + Build.VERSION.CODENAME);
-        dataMap.put("sdk", Integer.valueOf(Build.VERSION.SDK_INT));
-        dataMap.put("model", Build.MODEL);
+        Event event = new Event(context, Event.EVENTTYPE_LOGIN);
+        event.getExtras().put("systemName", Build.VERSION.RELEASE + " " + Build.VERSION.CODENAME);
+        event.getExtras().put("sdk", Integer.valueOf(Build.VERSION.SDK_INT));
+        event.getExtras().put("model", Build.MODEL);
         // TODO: info o povolených polohových službách, internetu ...?
-
-        Event event = new Event(context, Event.EVENTTYPE_LOGIN, dataMap);
 
         EventUploaderService.addEvent(context, event);
         EventUploaderService.performUpload(context);
