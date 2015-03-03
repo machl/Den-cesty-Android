@@ -20,6 +20,7 @@ import android.widget.TextView;
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
+import cz.machalik.bcthesis.dencesty.model.Walker;
 
 /**
  * Race activity.
@@ -29,17 +30,17 @@ import cz.machalik.bcthesis.dencesty.model.RaceModel;
 public class RaceActivity extends Activity {
     protected static final String TAG = "RaceActivity";
 
-    private static final String ACTION_UPDATE_LOCATION_COUNTER = "cz.machalik.bcthesis.dencesty.action.UPDATE_LOCATION_COUNTER";
+    public static final String EXTRA_RACE_ID = "cz.machalik.bcthesis.dencesty.extra.EXTRA_RACE_ID";
 
-    private static final String EXTRA_NUM_OF_LOCATION_UPDATES = "cz.machalik.bcthesis.dencesty.extra.NUM_OF_LOCATION_UPDATES";
+    private RaceModel raceModel;
 
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
-    private RaceInfoUpdateAsyncTask mRefreshTask = null;
+    private WalkersUpdateAsyncTask mRefreshTask = null;
 
     private BroadcastReceiver mUnsentCounterReceiver;
-    private BroadcastReceiver mLocationUpdatesCounterReceiver;
+    private BroadcastReceiver mRaceInfoChangedReceiver;
 
     // UI references.
     private Button mEndraceButton;
@@ -53,6 +54,14 @@ public class RaceActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        int raceId = getIntent().getIntExtra(EXTRA_RACE_ID, 0);
+        this.raceModel = new RaceModel(raceId);
+
+
+        this.raceModel.startRace(this);
+
+
         setContentView(R.layout.activity_race);
 
         mEndraceButton = (Button) findViewById(R.id.endrace_button);
@@ -93,18 +102,17 @@ public class RaceActivity extends Activity {
                         new IntentFilter(EventUploaderService.ACTION_EVENT_QUEUE_SIZE_CHANGED));
 
         // Register broadcast receiver on location counter updates
-        mLocationUpdatesCounterReceiver = new BroadcastReceiver() {
+        mRaceInfoChangedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(ACTION_UPDATE_LOCATION_COUNTER)) {
-                    int numOfLocationUpdates = intent.getIntExtra(EXTRA_NUM_OF_LOCATION_UPDATES, 0);
-                    setLocationUpdatesCounter(numOfLocationUpdates);
+                if (intent.getAction().equals(RaceModel.ACTION_RACE_INFO_CHANGED)) {
+                    updateRaceInfoUI();
                 }
             }
         };
         LocalBroadcastManager.getInstance(this)
-                .registerReceiver(mLocationUpdatesCounterReceiver,
-                        new IntentFilter(ACTION_UPDATE_LOCATION_COUNTER));
+                .registerReceiver(mRaceInfoChangedReceiver,
+                        new IntentFilter(RaceModel.ACTION_RACE_INFO_CHANGED));
     }
 
     protected void showDialogToEndRace() {
@@ -142,7 +150,7 @@ public class RaceActivity extends Activity {
      * Removes location updates from the BackgroundLocationService.
      */
     protected void stopLocationUpdates() {
-        RaceModel.getInstance().stopRace(this);
+        this.raceModel.stopRace(this);
     }
 
     public void attemptRefresh() {
@@ -153,7 +161,7 @@ public class RaceActivity extends Activity {
         // Show a progress spinner, and kick off a background task to
         // perform the race info refresh attempt.
         // showProgress(true);
-        mRefreshTask = new RaceInfoUpdateAsyncTask(this);
+        mRefreshTask = new WalkersUpdateAsyncTask(this);
         mRefreshTask.execute();
     }
 
@@ -167,7 +175,7 @@ public class RaceActivity extends Activity {
         super.onResume();
         attemptRefresh();
         setUnsentCounter(EventUploaderService.getEventQueueSize());
-        setLocationUpdatesCounter(RaceModel.getNumOfLocationUpdates());
+        updateRaceInfoUI();
     }
 
     @Override
@@ -184,7 +192,7 @@ public class RaceActivity extends Activity {
     protected void onDestroy() {
         stopLocationUpdates();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mUnsentCounterReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocationUpdatesCounterReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRaceInfoChangedReceiver);
         super.onDestroy();
     }
 
@@ -197,16 +205,16 @@ public class RaceActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
-    private class RaceInfoUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
+    private class WalkersUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
         private final Context mContext;
-        public RaceInfoUpdateAsyncTask (Context context){
+        public WalkersUpdateAsyncTask (Context context){
             this.mContext = context;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            return RaceModel.getInstance().fetchRaceInfo(mContext);
+            return Walker.fetchWalkersFromWeb(mContext);
         }
 
         @Override
@@ -216,7 +224,7 @@ public class RaceActivity extends Activity {
 
             if (success) {
                 //Log.i(TAG, "Successful RaceInfoUpdate");
-                updateRaceInfoUI();
+                updateWalkersUI();
             } else {
                 //Log.i(TAG, "Failed RaceInfoUpdate");
             }
@@ -233,11 +241,14 @@ public class RaceActivity extends Activity {
         mSwipeContainer.setRefreshing(show);
     }
 
-
     protected void updateRaceInfoUI() {
-        this.mDistanceTextView.setText(String.format("%d m", RaceModel.getInstance().getRaceInfoDistance()));
-        this.mAvgSpeedTextView.setText(String.format("%.2f km/h", RaceModel.getInstance().getRaceInfoAvgSpeed()));
+        this.mDistanceTextView.setText(String.format("%d m", this.raceModel.getRaceDistance()));
+        this.mAvgSpeedTextView.setText(String.format("%.2f km/h", this.raceModel.getRaceAvgSpeed()));
 
+        this.mLocationUpdatesCounter.setText(""+this.raceModel.getLocationUpdatesCounter());
+    }
+
+    protected void updateWalkersUI() {
         mWalkersListView.setAdapter(new WalkersListAdapter(this));
     }
 
@@ -247,16 +258,6 @@ public class RaceActivity extends Activity {
             mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_highlighted));
         else
             mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_default));
-    }
-
-    protected void setLocationUpdatesCounter(int numOfLocationUpdates) {
-        mLocationUpdatesCounter.setText(""+numOfLocationUpdates);
-    }
-
-    public static void updateLocationCounter(Context context, int numOfLocationUpdates) {
-        Intent intent = new Intent(ACTION_UPDATE_LOCATION_COUNTER);
-        intent.putExtra(EXTRA_NUM_OF_LOCATION_UPDATES, numOfLocationUpdates);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
 }

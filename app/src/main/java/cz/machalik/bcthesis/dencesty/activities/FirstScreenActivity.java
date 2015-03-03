@@ -16,7 +16,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.User;
 
 public class FirstScreenActivity extends Activity {
@@ -59,9 +58,9 @@ public class FirstScreenActivity extends Activity {
     protected void onStartRaceButtonHandler(View view) {
         if (servicesConnected() && locationEnabled()) {
             // Requests location updates from the BackgroundLocationService.
-            RaceModel.getInstance().startRace(this);
 
             Intent intent = new Intent(this, RaceActivity.class);
+            intent.putExtra(RaceActivity.EXTRA_RACE_ID, 20);
             startActivity(intent);
         }
     }

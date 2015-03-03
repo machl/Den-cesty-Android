@@ -19,7 +19,7 @@ import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 /**
  * Lukáš Machalík
  */
-public class Event implements Serializable {
+public class Event implements Serializable { // TODO: extends HashMap, mit tak hezci interface pro pridavani informaci navic
 
     // Types of event:
     public static final String EVENTTYPE_LOGIN = "LoginSuccess";

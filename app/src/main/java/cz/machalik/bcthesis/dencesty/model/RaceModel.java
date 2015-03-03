@@ -7,18 +7,13 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.support.v4.content.LocalBroadcastManager;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import cz.machalik.bcthesis.dencesty.activities.RaceActivity;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
-import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
@@ -27,37 +22,16 @@ import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 public class RaceModel {
     protected static final String TAG = "RaceModel";
 
-    // It's singleton
-    private static RaceModel ourInstance = new RaceModel();
-    public static RaceModel getInstance() {
-        return ourInstance;
+    /****************************** Public constants: ******************************/
+
+    public static final String ACTION_RACE_INFO_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_RACE_INFO_CHANGED";
+
+
+    /****************************** Public API: ******************************/
+
+    public RaceModel(int raceId) { // TODO: another info? int change to JSONData?
+        this.raceId = raceId;
     }
-    private RaceModel() {} // TODO: ukládat info mezi spuštěními aplikace
-
-
-    /**
-     * Represents a geographical location.
-     */
-    protected Location mCurrentLocation;
-
-    /**
-     * Race info entries
-     */
-    protected int raceInfoDistance;
-    protected double raceInfoAvgSpeed;
-    protected int raceInfoNumWalkersAhead;
-    protected int raceInfoNumWalkersBehind;
-    protected int raceInfoNumWalkersEnded;
-    protected JSONArray raceInfoWalkersAhead;
-    protected JSONArray raceInfoWalkersBehind;
-
-    /**
-     * Number od location updates so far.
-     */
-    protected static int numOfLocationUpdates = 0;
-
-    private BroadcastReceiver mLocationChangedReceiver;
-
 
     public void startRace(Context context) {
         // Create new start race event
@@ -97,12 +71,71 @@ public class RaceModel {
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mLocationChangedReceiver);
     }
 
-    public void onLocationChanged(Context context, Location location) {
-        mCurrentLocation = location;
+    public boolean isStarted() {
+        return isStarted;
+    }
 
+    public int getRaceId() {
+        return raceId;
+    }
+
+    public int getRaceDistance() {
+        return raceDistance;
+    }
+
+    public double getRaceAvgSpeed() {
+        return raceAvgSpeed;
+    }
+
+    public int getLocationUpdatesCounter() {
+        return locationUpdatesCounter;
+    }
+
+
+    /****************************** Private: ******************************/
+
+    private int raceId;
+    private boolean isStarted = false;
+    private int raceDistance = 0;
+    private double raceAvgSpeed = 0.0;
+
+    /**
+     * Number od location updates so far.
+     */
+    private int locationUpdatesCounter = 0;
+
+    private BroadcastReceiver mLocationChangedReceiver;
+
+
+    private void onLocationChanged(Context context, Location location) {
+        //mCurrentLocation = location;
+        int newDistance = calculateDistance(location);
+
+        if (newDistance > this.raceDistance) {
+            this.raceDistance = newDistance;
+            this.raceAvgSpeed = calculateAvgSpeed(location);
+        } else {
+            // TODO: upozorneni na sejiti z trasy (po nekolika location updatech mimo)
+        }
+
+        fireLocationUpdateEvent(context, location);
+        notifySomeRaceInfoChanged(context);
+    }
+
+    private int calculateDistance(Location location) {
+        // TODO: proper implementation
+        return raceDistance + 50;
+    }
+
+    private double calculateAvgSpeed(Location location) {
+        // TODO: proper implementation
+        return raceAvgSpeed + 0.5;
+    }
+
+    private void fireLocationUpdateEvent(Context context, Location location) {
         Float course = location.hasBearing() ? location.getBearing() : -1;
         Double altitude = location.hasAltitude() ? location.getAltitude() : -1;
-        Integer counter = numOfLocationUpdates++;
+        Integer counter = locationUpdatesCounter++;
         Float speed = location.hasSpeed() ? location.getSpeed() : -1;
         Float verAcc = -1f; // Android does not provide vertical accuracy information
         Double latitude = location.getLatitude();
@@ -118,7 +151,6 @@ public class RaceModel {
                 ' ' + verAcc + ' ' + timestamp;
         //Log.i(TAG, info);
         FileLogger.log(TAG, info);*/
-        RaceActivity.updateLocationCounter(context, numOfLocationUpdates);
 
         Map dataMap = new HashMap(10);
         dataMap.put("latitude", latitude);
@@ -131,6 +163,8 @@ public class RaceModel {
         dataMap.put("timestamp", timestamp);
         dataMap.put("counter", counter);
         dataMap.put("provider", provider);
+        dataMap.put("distance", this.raceDistance);
+        dataMap.put("avgSpeed", this.raceAvgSpeed);
 
         Event event = new Event(context, Event.EVENTTYPE_LOCATIONUPDATE, dataMap);
 
@@ -138,70 +172,9 @@ public class RaceModel {
         EventUploaderService.performUpload(context);
     }
 
-
-
-    public boolean fetchRaceInfo(Context context) {
-        JSONObject jsonResponse = WebAPI.synchronousRaceInfoUpdateRequest();
-
-        if (jsonResponse != null) {
-            onFetchedRaceInfo(context, jsonResponse);
-            return true;
-        }
-
-        return false;
+    private void notifySomeRaceInfoChanged(Context context) {
+        Intent intent = new Intent(ACTION_RACE_INFO_CHANGED);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
-    protected void onFetchedRaceInfo(Context context, JSONObject jsonData) {
-        if (!jsonData.has("distance") || !jsonData.has("speed") || !jsonData.has("numWalkersAhead") ||
-                !jsonData.has("numWalkersBehind") || !jsonData.has("numWalkersEnded") ||
-                !jsonData.has("walkersAhead") || !jsonData.has("walkersBehind")) {
-            String message = "Response RaceInfo missing some entries";
-            //Log.e(TAG, message);
-            FileLogger.log(TAG, message);
-            return;
-        }
-
-        this.raceInfoDistance = jsonData.optInt("distance");
-        this.raceInfoAvgSpeed = jsonData.optDouble("speed");
-        this.raceInfoNumWalkersAhead = jsonData.optInt("numWalkersAhead");
-        this.raceInfoNumWalkersBehind = jsonData.optInt("numWalkersBehind");
-        this.raceInfoNumWalkersEnded = jsonData.optInt("numWalkersEnded");
-        this.raceInfoWalkersAhead = jsonData.optJSONArray("walkersAhead");
-        this.raceInfoWalkersBehind = jsonData.optJSONArray("walkersBehind");
-    }
-
-
-    /*** GETTERS & SETTERS ***/
-
-    public int getRaceInfoDistance() {
-        return raceInfoDistance;
-    }
-
-    public double getRaceInfoAvgSpeed() {
-        return raceInfoAvgSpeed;
-    }
-
-    public int getRaceInfoNumWalkersAhead() {
-        return raceInfoNumWalkersAhead;
-    }
-
-    public int getRaceInfoNumWalkersBehind() {
-        return raceInfoNumWalkersBehind;
-    }
-
-    public int getRaceInfoNumWalkersEnded() {
-        return raceInfoNumWalkersEnded;
-    }
-
-    public JSONArray getRaceInfoWalkersAhead() {
-        return raceInfoWalkersAhead;
-    }
-
-    public JSONArray getRaceInfoWalkersBehind() {
-        return raceInfoWalkersBehind;
-    }
-
-    public static int getNumOfLocationUpdates() {
-        return numOfLocationUpdates;
-    }
 }

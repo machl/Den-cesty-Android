@@ -12,8 +12,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import cz.machalik.bcthesis.dencesty.R;
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.User;
+import cz.machalik.bcthesis.dencesty.model.Walker;
 
 /**
  * Lukáš Machalík
@@ -28,13 +28,13 @@ public class WalkersListAdapter extends BaseAdapter {
 
     public WalkersListAdapter(Context context) {
         this.context = context;
-        this.walkersAhead = RaceModel.getInstance().getRaceInfoWalkersAhead();
-        this.walkersBehind = RaceModel.getInstance().getRaceInfoWalkersBehind();
+        this.walkersAhead = Walker.getWalkersAhead();
+        this.walkersBehind = Walker.getWalkersBehind();
         this.me = new JSONObject();
         try {
             this.me.put("name", String.format("Já (%s)", User.getWalkerUsername()));
-            this.me.put("distance", RaceModel.getInstance().getRaceInfoDistance());
-            this.me.put("speed", RaceModel.getInstance().getRaceInfoAvgSpeed());
+            this.me.put("distance", Walker.getWalkerDistance());
+            this.me.put("speed", Walker.getWalkerAvgSpeed());
         } catch (JSONException e) {
             e.printStackTrace();
         }

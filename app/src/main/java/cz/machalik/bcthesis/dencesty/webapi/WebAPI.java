@@ -36,7 +36,7 @@ public class WebAPI {
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
-    public static JSONObject synchronousLoginHandlerRequest(String email, String password) {
+    public static JSONObject synchronousLoginHandlerRequest(String email, String password) { // TODO: ošetřit nedostupné internetové připojení
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
