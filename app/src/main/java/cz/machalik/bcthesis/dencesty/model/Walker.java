@@ -24,27 +24,47 @@ public class Walker {
         JSONObject jsonResponse = WebAPI.synchronousRaceInfoUpdateRequest();
 
         if (jsonResponse != null) {
-            onFetchedRaceInfo(context, jsonResponse);
+            initializeWalkers(jsonResponse);
             return true;
         }
 
         return false;
     }
 
-    public static int getWalkerDistance() {
-        return walkerDistance;
+    public static Walker getPresentWalker() {
+        return presentWalker;
     }
 
-    public static double getWalkerAvgSpeed() {
-        return walkerAvgSpeed;
-    }
-
-    public static JSONArray getWalkersAhead() {
+    public static Walker[] getWalkersAhead() {
         return walkersAhead;
     }
 
-    public static JSONArray getWalkersBehind() {
+    public static Walker[] getWalkersBehind() {
         return walkersBehind;
+    }
+
+    public static int getNumWalkersAhead() {
+        return numWalkersAhead;
+    }
+
+    public static int getNumWalkersBehind() {
+        return numWalkersBehind;
+    }
+
+    public static int getNumWalkersEnded() {
+        return numWalkersEnded;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getDistance() {
+        return distance;
+    }
+
+    public double getAvgSpeed() {
+        return avgSpeed;
     }
 
     /****************************** Private: ******************************/
@@ -52,16 +72,14 @@ public class Walker {
     /**
      * Race info entries
      */
-    // TODO: add separate distance and avgSpeed? (for walkers table)
-    private static int walkerDistance; // TODO: temp (delete it)
-    private static double walkerAvgSpeed; // TODO: temp (delete it)
-    private static int numWalkersAhead; // TODO: change name to Count?
+    private static Walker presentWalker;
+    private static int numWalkersAhead;
     private static int numWalkersBehind;
     private static int numWalkersEnded;
-    private static JSONArray walkersAhead; // TODO: change to Walker[]
-    private static JSONArray walkersBehind; // TODO: change to Walker[]
+    private static Walker[] walkersAhead; // TODO: ahead/behind/present předělat na Enum?
+    private static Walker[] walkersBehind;
 
-    private static void onFetchedRaceInfo(Context context, JSONObject jsonData) {
+    private static void initializeWalkers(JSONObject jsonData) {
         if (!jsonData.has("distance") || !jsonData.has("speed") || !jsonData.has("numWalkersAhead") ||
                 !jsonData.has("numWalkersBehind") || !jsonData.has("numWalkersEnded") ||
                 !jsonData.has("walkersAhead") || !jsonData.has("walkersBehind")) {
@@ -71,12 +89,35 @@ public class Walker {
             return;
         }
 
-        walkerDistance = jsonData.optInt("distance");
-        walkerAvgSpeed = jsonData.optDouble("speed");
+        presentWalker = new Walker(User.getWalkerUsername(), jsonData.optInt("distance"), jsonData.optDouble("speed"));
+
         numWalkersAhead = jsonData.optInt("numWalkersAhead");
         numWalkersBehind = jsonData.optInt("numWalkersBehind");
         numWalkersEnded = jsonData.optInt("numWalkersEnded");
-        walkersAhead = jsonData.optJSONArray("walkersAhead");
-        walkersBehind = jsonData.optJSONArray("walkersBehind");
+
+        final JSONArray walkersAheadJsonArray = jsonData.optJSONArray("walkersAhead");
+        walkersAhead = new Walker[walkersAheadJsonArray.length()];
+        for (int i = 0; i < walkersAheadJsonArray.length(); i++) {
+            final JSONObject o = walkersAheadJsonArray.optJSONObject(i);
+            walkersAhead[i] = new Walker(o.optString("name"), o.optInt("distance"), o.optDouble("speed"));
+        }
+
+        final JSONArray walkersBehindJsonArray = jsonData.optJSONArray("walkersBehind");
+        walkersBehind = new Walker[walkersBehindJsonArray.length()];
+        for (int i = 0; i < walkersBehindJsonArray.length(); i++) {
+            final JSONObject o = walkersBehindJsonArray.optJSONObject(i);
+            walkersBehind[i] = new Walker(o.optString("name"), o.optInt("distance"), o.optDouble("speed"));
+        }
     }
+
+    private final String name;
+    private final int distance;
+    private final double avgSpeed;
+
+    private Walker(String name, int distance, double avgSpeed) {
+        this.name = name;
+        this.distance = distance;
+        this.avgSpeed = avgSpeed;
+    }
+
 }
