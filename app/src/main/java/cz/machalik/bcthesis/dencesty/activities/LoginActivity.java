@@ -190,7 +190,7 @@ public class LoginActivity extends Activity {
 
 
     private void onSuccessfulLogin() {
-        Intent intent = new Intent(this, FirstScreenActivity.class);
+        Intent intent = new Intent(this, RacesListActivity.class);
         startActivity(intent);
     }
 

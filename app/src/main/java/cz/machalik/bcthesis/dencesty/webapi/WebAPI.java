@@ -1,6 +1,7 @@
 package cz.machalik.bcthesis.dencesty.webapi;
 
 import android.os.BatteryManager;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,11 +31,13 @@ public class WebAPI {
     public static final String URL_WEBSERVER = "http://machalik.kolej.mff.cuni.cz:3000";
     //public static final String URL_WEBSERVER = "https://www.dencesty.cz"; // must be with 'www.' !
 
-    public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/race/login";
-    public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/events/create/%d";
-    public static final String URL_RACEINFOUPDATE = URL_WEBSERVER + "/race/info/%d";
+    public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/api/login";
+    public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/api/push_events/%d";
+    public static final String URL_RACEINFOUPDATE = URL_WEBSERVER + "/api/scoreboard/%d";
+    public static final String URL_RACESLIST = URL_WEBSERVER + "/api/races";
 
-    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    public static final DateFormat DATE_FORMAT_UPLOAD = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    public static final DateFormat DATE_FORMAT_DOWNLOAD = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     public static JSONObject synchronousLoginHandlerRequest(String email, String password) { // TODO: ošetřit nedostupné internetové připojení
         JSONObject jsonResponse = null;
@@ -223,6 +226,71 @@ public class WebAPI {
         } catch (JSONException e) {
             String message = "Race info update: JSONException: " + e.getLocalizedMessage();
             //Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+
+        return jsonResponse;
+    }
+
+    public static JSONArray synchronousRacesListUpdateRequest() {
+        if (!User.isLogged()) {
+            Log.e(TAG, "User is not logged to do synchronousRacesListUpdateRequest!");
+            return null;
+        }
+
+        JSONArray jsonResponse = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(URL_RACESLIST);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            //urlConnection.setDoInput(false);
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setUseCaches(false);
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setConnectTimeout(10 * 1000); // in millis
+            urlConnection.setReadTimeout(10 * 1000); // in millis
+            urlConnection.connect();
+
+            int responseCode = urlConnection.getResponseCode();
+            if (responseCode == 200) {
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line+"\n");
+                }
+                br.close();
+                String jsonString = sb.toString();
+
+                jsonResponse = new JSONArray(jsonString);
+
+            } else {
+                String message = "Races list update: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
+                Log.e(TAG, message);
+                FileLogger.log(TAG, message);
+                // TODO: Create error event
+            }
+
+        } catch (MalformedURLException e) {
+            String message = "Races list update: MalformedURLException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } catch (IOException e) {
+            String message = "Races list update: IOException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } catch (JSONException e) {
+            String message = "Races list update: JSONException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } finally {

@@ -141,7 +141,7 @@ public class RaceModel {
         String provider = location.getProvider() != null ? location.getProvider() : "notset";
 
         Date date = new Date(location.getTime());
-        String timestamp = WebAPI.DATE_FORMAT.format(date);
+        String timestamp = WebAPI.DATE_FORMAT_UPLOAD.format(date);
 
         /*String info = "Location changed: " + counter + ' ' + provider + ' ' + latitude + ' ' +
                 longitude + ' ' + altitude + ' ' + speed + ' ' + course + ' ' + horAcc +

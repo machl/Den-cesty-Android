@@ -64,7 +64,7 @@ public class Event implements Serializable {
         this.batteryState = WebAPI.convertBatteryStatus(status, plugged);
 
         // Add unique timestamp
-        this.timestamp = WebAPI.DATE_FORMAT.format(new Date());
+        this.timestamp = WebAPI.DATE_FORMAT_UPLOAD.format(new Date());
 
         // Obtain proper event id from shared preferences:
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());

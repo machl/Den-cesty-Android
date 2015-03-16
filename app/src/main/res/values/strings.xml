@@ -35,4 +35,7 @@
     <string name="distance_comma_speed">distance, speed</string>
     <string name="end_race_button">End race</string>
 
+    <!-- Strings related to races list activity -->
+    <string name="title_activity_races_list">List of races</string>
+
 </resources>
