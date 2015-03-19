@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -9,16 +9,24 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".RaceActivity">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_container"
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1">
+    <ProgressBar style="?android:attr/progressBarStyleLarge"
+        android:id="@+id/race_progress"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+    <LinearLayout
+        android:id="@+id/race_main_layout"
+        android:visibility="visible"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
 
         <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
-
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1">
 
             <LinearLayout
                 android:id="@+id/details_layout1"
@@ -166,24 +174,22 @@
                     android:gravity="center_vertical|right" />
             </LinearLayout>
 
-            <ListView
-                android:id="@+id/walkers_listview"
+            <Button
                 android:layout_width="match_parent"
-                android:layout_height="fill_parent"
-                android:drawSelectorOnTop="true"
-                android:choiceMode="none"
+                android:layout_height="wrap_content"
+                android:text="Walkers List"
+                android:id="@+id/walkers_button"
                 android:layout_below="@+id/details_layout5"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="5dp" />
 
         </RelativeLayout>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+        <Button
+            android:id="@+id/endrace_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/end_race_button" />
 
-    <Button
-        android:id="@+id/endrace_button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/end_race_button" />
-
-</LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

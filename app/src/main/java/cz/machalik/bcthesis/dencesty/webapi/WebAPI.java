@@ -31,10 +31,11 @@ public class WebAPI {
     public static final String URL_WEBSERVER = "http://machalik.kolej.mff.cuni.cz:3000";
     //public static final String URL_WEBSERVER = "https://www.dencesty.cz"; // must be with 'www.' !
 
-    public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/api/login";
-    public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/api/push_events/%d";
-    public static final String URL_RACEINFOUPDATE = URL_WEBSERVER + "/api/scoreboard/%d";
-    public static final String URL_RACESLIST = URL_WEBSERVER + "/api/races";
+    public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/api/login.json";
+    public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/api/push_events.json";
+    public static final String URL_WALKERSLIST = URL_WEBSERVER + "/api/scoreboard/%d.json?walker_id=%d";
+    public static final String URL_RACESLIST = URL_WEBSERVER + "/api/races.json";
+    public static final String URL_RACEDATA = URL_WEBSERVER + "/api/race_data/%d.json";
 
     public static final DateFormat DATE_FORMAT_UPLOAD = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     public static final DateFormat DATE_FORMAT_DOWNLOAD = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -112,7 +113,7 @@ public class WebAPI {
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(String.format(URL_EVENTHANDLER, User.getWalkerId()));
+            URL url = new URL(String.format(URL_EVENTHANDLER));
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
@@ -172,16 +173,16 @@ public class WebAPI {
         return jsonResponse;
     }
 
-    public static JSONObject synchronousRaceInfoUpdateRequest() {
+    public static JSONObject synchronousWalkersListRequest(int raceId, int walkerId) {
         if (!User.isLogged()) {
-            //Log.e(TAG, "User is not logged to do synchronousRaceInfoUpdateRequest!");
+            //Log.e(TAG, "User is not logged to do synchronousWalkersListRequest!");
             return null;
         }
 
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(String.format(URL_RACEINFOUPDATE, User.getWalkerId()));
+            URL url = new URL(String.format(URL_WALKERSLIST, raceId, walkerId));
             urlConnection = (HttpURLConnection) url.openConnection();
             //urlConnection.setDoInput(false);
             urlConnection.setDoOutput(true);
@@ -207,24 +208,24 @@ public class WebAPI {
                 jsonResponse = new JSONObject(jsonString);
 
             } else {
-                String message = "Race info update: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
+                String message = "Walkers list update: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
                 //Log.e(TAG, message);
                 FileLogger.log(TAG, message);
                 // TODO: Create error event
             }
 
         } catch (MalformedURLException e) {
-            String message = "Race info update: MalformedURLException: " + e.getLocalizedMessage();
+            String message = "Walkers list update: MalformedURLException: " + e.getLocalizedMessage();
             //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
         } catch (IOException e) {
-            String message = "Race info update: IOException: " + e.getLocalizedMessage();
+            String message = "Walkers list update: IOException: " + e.getLocalizedMessage();
             //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             //e.printStackTrace();
         } catch (JSONException e) {
-            String message = "Race info update: JSONException: " + e.getLocalizedMessage();
+            String message = "Walkers list update: JSONException: " + e.getLocalizedMessage();
             //Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();
@@ -290,6 +291,71 @@ public class WebAPI {
             e.printStackTrace();
         } catch (JSONException e) {
             String message = "Races list update: JSONException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+
+        return jsonResponse;
+    }
+
+    public static JSONObject synchronousRaceDataRequest(int raceId) {
+        if (!User.isLogged()) {
+            Log.e(TAG, "User is not logged to do synchronousRaceDataRequest!");
+            return null;
+        }
+
+        JSONObject jsonResponse = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(String.format(URL_RACEDATA, raceId));
+            urlConnection = (HttpURLConnection) url.openConnection();
+            //urlConnection.setDoInput(false);
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setUseCaches(false);
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setConnectTimeout(10 * 1000); // in millis
+            urlConnection.setReadTimeout(10 * 1000); // in millis
+            urlConnection.connect();
+
+            int responseCode = urlConnection.getResponseCode();
+            if (responseCode == 200) {
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line+"\n");
+                }
+                br.close();
+                String jsonString = sb.toString();
+
+                jsonResponse = new JSONObject(jsonString);
+
+            } else {
+                String message = "Race data request: Wrong response code " + responseCode + ": " + urlConnection.getResponseMessage();
+                Log.e(TAG, message);
+                FileLogger.log(TAG, message);
+                // TODO: Create error event
+            }
+
+        } catch (MalformedURLException e) {
+            String message = "Race data request: MalformedURLException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } catch (IOException e) {
+            String message = "Race data request: IOException: " + e.getLocalizedMessage();
+            Log.e(TAG, message);
+            FileLogger.log(TAG, message);
+            e.printStackTrace();
+        } catch (JSONException e) {
+            String message = "Race data request: JSONException: " + e.getLocalizedMessage();
             Log.e(TAG, message);
             FileLogger.log(TAG, message);
             e.printStackTrace();

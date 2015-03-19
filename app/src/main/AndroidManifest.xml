@@ -47,6 +47,10 @@
             android:name=".activities.RacesListActivity"
             android:label="@string/title_activity_races_list" >
         </activity>
+        <activity
+            android:name=".activities.WalkersListActivity"
+            android:label="@string/title_activity_walkers_list" >
+        </activity>
     </application>
 
 </manifest>

@@ -38,6 +38,7 @@ public class Event implements Serializable {
     private static final String EVENT_ID_COUNTER_KEY = "cz.machalik.bcthesis.dencesty.Event.eventIdCounter";
 
     private final int eventId;
+    private final int walkerId;
     private final int raceId;
     private final String type;
     private final int batteryLevel;
@@ -45,12 +46,13 @@ public class Event implements Serializable {
     private final String timestamp;
     private final Map extras;
 
-    public Event(Context context, String type) {
-        this(context, UNKNOWN_RACE_ID, type);
+    public Event(Context context, int walkerId, String type) {
+        this(context, walkerId, UNKNOWN_RACE_ID, type);
     }
 
-    public Event(Context context, int raceId, String type) {
+    public Event(Context context, int walkerId, int raceId, String type) {
         this.type = type;
+        this.walkerId = walkerId;
         this.raceId = raceId;
         this.extras = new HashMap();
 
@@ -79,7 +81,8 @@ public class Event implements Serializable {
 
         try {
             ret.put("eventId", eventId);
-            ret.put("raceid", raceId);
+            ret.put("walkerId", walkerId);
+            ret.put("raceId", raceId);
             ret.put("type", type);
             ret.put("data", new JSONObject(extras));
             ret.put("batL", batteryLevel);
@@ -95,7 +98,7 @@ public class Event implements Serializable {
 
     @Override
     public String toString() {
-        return "Event[" + eventId + "] " + raceId + " " + type + " " + timestamp + " " +
+        return "Event[" + walkerId + "," + raceId + "," + eventId + "] " + type + " " + timestamp + " " +
                 batteryLevel + " " + batteryState + " " + extras.toString();
     }
 

@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
+import cz.machalik.bcthesis.dencesty.model.User;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 

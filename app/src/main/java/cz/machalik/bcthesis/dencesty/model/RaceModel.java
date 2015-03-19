@@ -7,17 +7,23 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.support.v4.content.LocalBroadcastManager;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.text.ParseException;
 import java.util.Date;
 
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
+import cz.machalik.bcthesis.dencesty.model.DistanceModel.Checkpoint;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
  * Lukáš Machalík
  */
 public class RaceModel {
+
     protected static final String TAG = "RaceModel";
 
     /****************************** Public constants: ******************************/
@@ -31,9 +37,43 @@ public class RaceModel {
         this.raceId = raceId;
     }
 
+    public boolean init() {
+        JSONObject response = WebAPI.synchronousRaceDataRequest(this.raceId);
+
+        if (response == null || !response.has("race_info") || !response.has("race_checkpoints")) {
+            return false;
+        }
+
+        // Process race_info:
+        final JSONObject raceInfo = response.optJSONObject("race_info");
+        Date startTime = null;
+        try {
+
+            startTime = WebAPI.DATE_FORMAT_DOWNLOAD.parse(raceInfo.optString("start_time"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Process race_checkpoints:
+        final JSONArray raceCheckpoints = response.optJSONArray("race_checkpoints");
+        Checkpoint[] checkpoints = new Checkpoint[raceCheckpoints.length()];
+        for (int i = 0; i < raceCheckpoints.length(); i++) {
+            final JSONObject o = raceCheckpoints.optJSONObject(i);
+            checkpoints[i] = new Checkpoint(o.optInt("checkid"),
+                                            o.optInt("meters"),
+                                            o.optDouble("latitude"),
+                                            o.optDouble("longitude"));
+        }
+
+        this.distanceModel.init(checkpoints, startTime);
+
+        return true;
+    }
+
     public void startRace(Context context) {
         // Create new start race event
-        Event event = new Event(context, this.raceId, Event.EVENTTYPE_STARTRACE);
+        Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
         event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
         EventUploaderService.addEvent(context, event);
 
@@ -60,7 +100,7 @@ public class RaceModel {
 
         // Create new stop race event
         if (wasRunning) {
-            Event event = new Event(context, this.raceId, Event.EVENTTYPE_STOPRACE);
+            Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STOPRACE);
             EventUploaderService.addEvent(context, event);
             EventUploaderService.performUpload(context);
         }
@@ -77,11 +117,13 @@ public class RaceModel {
     }
 
     public int getRaceDistance() {
-        return raceDistance;
+        // May be not inited yet
+        return distanceModel != null ? distanceModel.getDistance() : 0;
     }
 
     public double getRaceAvgSpeed() {
-        return raceAvgSpeed;
+        // May be not inited yet
+        return distanceModel != null ? distanceModel.getAvgSpeed() : 0;
     }
 
     public int getLocationUpdatesCounter() {
@@ -93,8 +135,7 @@ public class RaceModel {
 
     private int raceId;
     private boolean isStarted = false;
-    private int raceDistance = 0;
-    private double raceAvgSpeed = 0.0;
+    private DistanceModel distanceModel = new DistanceModel();
 
     /**
      * Number od location updates so far.
@@ -105,28 +146,10 @@ public class RaceModel {
 
 
     private void onLocationChanged(Context context, Location location) {
-        //mCurrentLocation = location;
-        int newDistance = calculateDistance(location);
-
-        if (newDistance > this.raceDistance) {
-            this.raceDistance = newDistance;
-            this.raceAvgSpeed = calculateAvgSpeed(location);
-        } else {
-            // TODO: upozorneni na sejiti z trasy (po nekolika location updatech mimo)
-        }
+        distanceModel.onLocationChanged(location);
 
         fireLocationUpdateEvent(context, location);
         notifySomeRaceInfoChanged(context);
-    }
-
-    private int calculateDistance(Location location) {
-        // TODO: proper implementation
-        return raceDistance + 50;
-    }
-
-    private double calculateAvgSpeed(Location location) {
-        // TODO: proper implementation
-        return raceAvgSpeed + 0.5;
     }
 
     private void fireLocationUpdateEvent(Context context, Location location) {
@@ -149,7 +172,7 @@ public class RaceModel {
         //Log.i(TAG, info);
         FileLogger.log(TAG, info);*/
 
-        Event event = new Event(context, this.raceId, Event.EVENTTYPE_LOCATIONUPDATE);
+        Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_LOCATIONUPDATE);
         event.getExtras().put("latitude", latitude);
         event.getExtras().put("longitude", longitude);
         event.getExtras().put("altitude", altitude);
@@ -160,8 +183,9 @@ public class RaceModel {
         event.getExtras().put("timestamp", timestamp);
         event.getExtras().put("counter", counter);
         event.getExtras().put("provider", provider);
-        event.getExtras().put("distance", this.raceDistance);
-        event.getExtras().put("avgSpeed", this.raceAvgSpeed);
+        event.getExtras().put("distance", getRaceDistance());
+        event.getExtras().put("avgSpeed", getRaceAvgSpeed());
+        event.getExtras().put("lastCheckpoint", distanceModel.getLastCheckpoint());
 
         EventUploaderService.addEvent(context, event);
         EventUploaderService.performUpload(context);

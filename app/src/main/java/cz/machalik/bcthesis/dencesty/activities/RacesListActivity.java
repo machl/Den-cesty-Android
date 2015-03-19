@@ -140,6 +140,7 @@ public class RacesListActivity extends ListActivity {
 
             } catch (ParseException e) {
                 e.printStackTrace();
+                return false;
             }
         }
 

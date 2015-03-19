@@ -1,5 +1,8 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -8,19 +11,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
-import cz.machalik.bcthesis.dencesty.model.Walker;
 
 /**
  * Race activity.
@@ -28,43 +30,132 @@ import cz.machalik.bcthesis.dencesty.model.Walker;
  * Lukáš Machalík
  */
 public class RaceActivity extends Activity {
+
     protected static final String TAG = "RaceActivity";
 
     public static final String EXTRA_RACE_ID = "cz.machalik.bcthesis.dencesty.extra.EXTRA_RACE_ID";
 
-    private RaceModel raceModel;
+    private RaceInitTask mRaceInitTask = null;
 
-    /**
-     * Keep track of the refresh task to ensure we can cancel it if requested.
-     */
-    private WalkersUpdateAsyncTask mRefreshTask = null;
+    private RaceModel raceModel;
 
     private BroadcastReceiver mUnsentCounterReceiver;
     private BroadcastReceiver mRaceInfoChangedReceiver;
 
     // UI references.
+    private View mProgressView;
+    private View mMainLayout;
     private Button mEndraceButton;
-    private SwipeRefreshLayout mSwipeContainer;
+    private Button mWalkersButton;
     private TextView mDistanceTextView;
     private TextView mAvgSpeedTextView;
-    private ListView mWalkersListView;
     private TextView mUnsentCounter;
     private TextView mLocationUpdatesCounter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_race);
+
+        mProgressView = findViewById(R.id.race_progress);
+        mMainLayout = findViewById(R.id.race_main_layout);
+        mEndraceButton = (Button) findViewById(R.id.endrace_button);
+        mWalkersButton = (Button) findViewById(R.id.walkers_button);
+        mDistanceTextView = (TextView) findViewById(R.id.distance_textview);
+        mAvgSpeedTextView = (TextView) findViewById(R.id.avgspeed_textview);
+        mUnsentCounter = (TextView) findViewById(R.id.unsent_textview);
+        mLocationUpdatesCounter = (TextView) findViewById(R.id.loccounter_textview);
 
         int raceId = getIntent().getIntExtra(EXTRA_RACE_ID, 0);
         this.raceModel = new RaceModel(raceId);
 
+        // Show a progress spinner, and kick off a background task to
+        // perform the race init attempt.
+        showProgress(true);
+        mRaceInitTask = new RaceInitTask(this);
+        mRaceInitTask.execute();
+    }
 
-        this.raceModel.startRace(this);
+    private class RaceInitTask extends AsyncTask<Void, Void, Boolean> {
 
+        private final Context mContext;
 
-        setContentView(R.layout.activity_race);
+        public RaceInitTask(Context context) {
+            mContext = context;
+        }
 
-        mEndraceButton = (Button) findViewById(R.id.endrace_button);
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return raceModel.init();
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mRaceInitTask = null;
+            showProgress(false);
+
+            if (success) {
+                Log.i(TAG, "Successful RaceInit");
+                onSuccessfulRaceInit();
+            } else {
+                Log.i(TAG, "Failed RaceInit");
+                finish();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mRaceInitTask = null;
+            showProgress(false);
+            Log.i(TAG, "Cancelled RaceInit");
+            finish();
+        }
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mMainLayout.setVisibility(show ? View.GONE : View.VISIBLE);
+            mMainLayout.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mMainLayout.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mMainLayout.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private void onSuccessfulRaceInit() {
+        initRaceUI();
+    }
+
+    private void initRaceUI() {
+
+        this.raceModel.startRace(this); // TODO: move to some button touch
+
         mEndraceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,20 +163,15 @@ public class RaceActivity extends Activity {
             }
         });
 
-        mSwipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        mSwipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        mWalkersButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onRefresh() {
-                attemptRefresh();
+            public void onClick(View v) {
+                // TODO: temporary:
+                Intent intent = new Intent(getBaseContext(), WalkersListActivity.class);
+                intent.putExtra(RaceActivity.EXTRA_RACE_ID, raceModel.getRaceId());
+                startActivity(intent);
             }
         });
-
-        mDistanceTextView = (TextView) findViewById(R.id.distance_textview);
-        mAvgSpeedTextView = (TextView) findViewById(R.id.avgspeed_textview);
-        mUnsentCounter = (TextView) findViewById(R.id.unsent_textview);
-        mLocationUpdatesCounter = (TextView) findViewById(R.id.loccounter_textview);
-
-        mWalkersListView = (ListView) findViewById(R.id.walkers_listview);
 
         // Register broadcast receiver on unsent events counter updates
         mUnsentCounterReceiver = new BroadcastReceiver() {
@@ -153,18 +239,6 @@ public class RaceActivity extends Activity {
         this.raceModel.stopRace(this);
     }
 
-    public void attemptRefresh() {
-        if (mRefreshTask != null) {
-            return;
-        }
-
-        // Show a progress spinner, and kick off a background task to
-        // perform the race info refresh attempt.
-        // showProgress(true);
-        mRefreshTask = new WalkersUpdateAsyncTask(this);
-        mRefreshTask.execute();
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -173,7 +247,6 @@ public class RaceActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        attemptRefresh();
         setUnsentCounter(EventUploaderService.getEventQueueSize());
         updateRaceInfoUI();
     }
@@ -191,7 +264,7 @@ public class RaceActivity extends Activity {
     @Override
     protected void onDestroy() {
         stopLocationUpdates();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mUnsentCounterReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mUnsentCounterReceiver); // TODO: if not null?
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRaceInfoChangedReceiver);
         super.onDestroy();
     }
@@ -205,51 +278,11 @@ public class RaceActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
-    private class WalkersUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final Context mContext;
-        public WalkersUpdateAsyncTask (Context context){
-            this.mContext = context;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            return Walker.fetchWalkersFromWeb(mContext);
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            mRefreshTask = null;
-            showProgress(false);
-
-            if (success) {
-                //Log.i(TAG, "Successful RaceInfoUpdate");
-                updateWalkersUI();
-            } else {
-                //Log.i(TAG, "Failed RaceInfoUpdate");
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mRefreshTask = null;
-            showProgress(false);
-        }
-    }
-
-    private void showProgress(final boolean show) {
-        mSwipeContainer.setRefreshing(show);
-    }
-
     protected void updateRaceInfoUI() {
         this.mDistanceTextView.setText(String.format("%d m", this.raceModel.getRaceDistance()));
         this.mAvgSpeedTextView.setText(String.format("%.2f km/h", this.raceModel.getRaceAvgSpeed()));
 
         this.mLocationUpdatesCounter.setText(""+this.raceModel.getLocationUpdatesCounter());
-    }
-
-    protected void updateWalkersUI() {
-        mWalkersListView.setAdapter(new WalkersListAdapter(this));
     }
 
     protected void setUnsentCounter(int numOfUnsentMessages) {

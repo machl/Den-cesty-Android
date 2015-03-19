@@ -117,7 +117,7 @@ public class User {
         walkerUsername = jsonData.optString("username");
         isLogged = true;
 
-        Event event = new Event(context, Event.EVENTTYPE_LOGIN);
+        Event event = new Event(context, walkerId, Event.EVENTTYPE_LOGIN);
         event.getExtras().put("systemName", Build.VERSION.RELEASE + " " + Build.VERSION.CODENAME);
         event.getExtras().put("sdk", Integer.valueOf(Build.VERSION.SDK_INT));
         event.getExtras().put("model", Build.MODEL);

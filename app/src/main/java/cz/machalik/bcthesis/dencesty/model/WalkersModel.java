@@ -12,16 +12,17 @@ import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 /**
  * Lukáš Machalík
  */
-public class Walker {
-    protected static final String TAG = "Walker";
+public class WalkersModel {
+
+    protected static final String TAG = "WalkersModel";
 
     /****************************** Public constants: ******************************/
 
 
     /****************************** Public API: ******************************/
 
-    public static boolean fetchWalkersFromWeb(Context context) {
-        JSONObject jsonResponse = WebAPI.synchronousRaceInfoUpdateRequest();
+    public boolean fetchWalkersFromWeb(Context context) {
+        JSONObject jsonResponse = WebAPI.synchronousWalkersListRequest(this.raceId, User.getWalkerId());
 
         if (jsonResponse != null) {
             initializeWalkers(jsonResponse);
@@ -31,55 +32,55 @@ public class Walker {
         return false;
     }
 
-    public static Walker getPresentWalker() {
+    public Walker getPresentWalker() {
         return presentWalker;
     }
 
-    public static Walker[] getWalkersAhead() {
+    public Walker[] getWalkersAhead() {
         return walkersAhead;
     }
 
-    public static Walker[] getWalkersBehind() {
+    public Walker[] getWalkersBehind() {
         return walkersBehind;
     }
 
-    public static int getNumWalkersAhead() {
+    public int getNumWalkersAhead() {
         return numWalkersAhead;
     }
 
-    public static int getNumWalkersBehind() {
+    public int getNumWalkersBehind() {
         return numWalkersBehind;
     }
 
-    public static int getNumWalkersEnded() {
+    public int getNumWalkersEnded() {
         return numWalkersEnded;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public int getDistance() {
-        return distance;
-    }
-
-    public double getAvgSpeed() {
-        return avgSpeed;
-    }
 
     /****************************** Private: ******************************/
+
+    private int raceId;
 
     /**
      * Race info entries
      */
-    private static Walker presentWalker;
-    private static int numWalkersAhead;
-    private static int numWalkersBehind;
-    private static int numWalkersEnded;
-    private static Walker[] walkersAhead; // TODO: ahead/behind/present předělat na Enum?
-    private static Walker[] walkersBehind;
+    private Walker presentWalker;
+    private int numWalkersAhead;
+    private int numWalkersBehind;
+    private int numWalkersEnded;
+    private Walker[] walkersAhead; // TODO: ahead/behind/present předělat na Enum?
+    private Walker[] walkersBehind;
 
-    private static void initializeWalkers(JSONObject jsonData) {
+    public WalkersModel(int raceId) {
+        this.raceId = raceId;
+
+        // Basic init:
+        this.presentWalker = new Walker(User.getWalkerUsername(), 0, 0);
+        this.walkersAhead = new Walker[0];
+        this.walkersBehind = new Walker[0];
+    }
+
+    private void initializeWalkers(JSONObject jsonData) {
         if (!jsonData.has("distance") || !jsonData.has("speed") || !jsonData.has("numWalkersAhead") ||
                 !jsonData.has("numWalkersBehind") || !jsonData.has("numWalkersEnded") ||
                 !jsonData.has("walkersAhead") || !jsonData.has("walkersBehind")) {
@@ -110,14 +111,15 @@ public class Walker {
         }
     }
 
-    private final String name;
-    private final int distance;
-    private final double avgSpeed;
+    public static class Walker {
+        public final String name;
+        public final int distance;
+        public final double avgSpeed;
 
-    private Walker(String name, int distance, double avgSpeed) {
-        this.name = name;
-        this.distance = distance;
-        this.avgSpeed = avgSpeed;
+        public Walker(String name, int distance, double avgSpeed) {
+            this.name = name;
+            this.distance = distance;
+            this.avgSpeed = avgSpeed;
+        }
     }
-
 }
