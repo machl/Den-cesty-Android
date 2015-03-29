@@ -13,7 +13,7 @@
     <color name="counter_default">#000000</color>
     <color name="counter_highlighted">#FF0000</color>
     <color name="listitem_ahead">#CAF866</color>
-    <color name="listitem_me">#FFCC66</color>
+    <color name="listitem_me">#E6E6E6</color>
     <color name="listitem_behind">#FF8000</color>
 
 </resources>

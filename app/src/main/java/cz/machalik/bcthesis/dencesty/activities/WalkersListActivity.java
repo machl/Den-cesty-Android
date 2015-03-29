@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.Date;
+
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel.Walker;
@@ -20,6 +22,8 @@ public class WalkersListActivity extends ListActivity {
 
     protected static final String TAG = "WalkersListActivity";
 
+    private static final int TIMEINTERVAL_TO_SUPPRESS_REFRESHING = 5 * 60; // in seconds
+
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
@@ -27,6 +31,8 @@ public class WalkersListActivity extends ListActivity {
 
     // UI references.
     private SwipeRefreshLayout mSwipeContainer;
+
+    private Date lastTimeRefreshed = null;
 
     private WalkersModel walkersModel;
 
@@ -53,7 +59,15 @@ public class WalkersListActivity extends ListActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        attemptRefresh();
+
+        if (this.lastTimeRefreshed == null ||
+                ((new Date().getTime() - this.lastTimeRefreshed.getTime()) / 1000) > TIMEINTERVAL_TO_SUPPRESS_REFRESHING)
+        {
+            showProgress(true);
+            attemptRefresh();
+        } else {
+            updateWalkersList();
+        }
     }
 
     public void attemptRefresh() {
@@ -87,6 +101,7 @@ public class WalkersListActivity extends ListActivity {
 
             if (success) {
                 Log.i(TAG, "Successful WalkersUpdate");
+                lastTimeRefreshed = new Date();
                 updateWalkersList();
             } else {
                 Log.i(TAG, "Failed WalkersUpdate");
@@ -156,22 +171,55 @@ public class WalkersListActivity extends ListActivity {
 
             if (convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(R.layout.right_detail_list_item, null);
+                convertView = inflater.inflate(R.layout.walker_list_item, null);
             }
 
-            TextView text1 = (TextView) convertView.findViewById(R.id.textLabel);
-            TextView text2 = (TextView) convertView.findViewById(R.id.detailTextLabel);
+            TextView nameLabel = (TextView) convertView.findViewById(R.id.nameLabel);
+            TextView progressLabel = (TextView) convertView.findViewById(R.id.progressLabel);
+            TextView infoLabel = (TextView) convertView.findViewById(R.id.infoLabel);
+            TextView timeLabel = (TextView) convertView.findViewById(R.id.timeLabel);
 
-            Walker item = getItem(position);
-            text1.setText(item.name);
-            text2.setText(String.format("%d m, %.2f km/h", item.distance, item.avgSpeed));
+            Walker walker = getItem(position);
 
-            if (position < getWalkersAhead().length) { // Ahead
-                convertView.setBackgroundColor(context.getResources().getColor(R.color.listitem_ahead));
-            } else if (position > getWalkersAhead().length) { // Behind
-                convertView.setBackgroundColor(context.getResources().getColor(R.color.listitem_behind));
-            } else { // Me
+            nameLabel.setText(walker.name);
+            progressLabel.setText(String.format("%d m, %.2f km/h", walker.distance, walker.avgSpeed));
+
+            // Show "Ended" if walker ended race already
+            if (walker.raceState == WalkersModel.RaceState.ENDED) {
+                infoLabel.setVisibility(View.VISIBLE);
+            } else {
+                infoLabel.setVisibility(View.GONE);
+            }
+
+            // 'Updated at' label:
+            if (walker.updatedAt != null) {
+                Date now = new Date();
+                long deltaSeconds = (now.getTime() - walker.updatedAt.getTime()) / 1000;
+                long deltaMinutes = deltaSeconds / 60;
+
+                if (deltaSeconds < 5) {
+                    timeLabel.setText("just now");
+                } else if (deltaSeconds < 60) {
+                    timeLabel.setText(String.format("%d seconds ago", deltaSeconds));
+                } else if (deltaSeconds < 120) {
+                    timeLabel.setText("a minute ago");
+                } else if (deltaMinutes < 60) {
+                    timeLabel.setText(String.format("%d minutes ago", deltaMinutes));
+                } else if (deltaMinutes < 120) {
+                    timeLabel.setText("an hour ago");
+                } else {
+                    int hours = (int) Math.floor(deltaMinutes / 60);
+                    timeLabel.setText(String.format("%d hours ago", hours));
+                }
+            } else {
+                timeLabel.setText("never updated");
+            }
+
+            // Set different background color for current user
+            if (position == getWalkersAhead().length) { // Me
                 convertView.setBackgroundColor(context.getResources().getColor(R.color.listitem_me));
+            } else {
+                convertView.setBackgroundColor(0x00000000); // transparent
             }
 
             return convertView;

@@ -140,49 +140,30 @@
                     android:gravity="center_vertical" />
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/details_layout5"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/details_layout4"
-                android:layout_centerHorizontal="true"
-                android:weightSum="2"
-                android:layout_marginTop="5dp">
-
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:text="@string/other_competitors"
-                    android:layout_weight="1"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:gravity="center_vertical" />
-
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/distance_comma_speed"
-                    android:layout_weight="1"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:gravity="center_vertical|right" />
-            </LinearLayout>
-
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Walkers List"
                 android:id="@+id/walkers_button"
-                android:layout_below="@+id/details_layout5"
+                android:layout_below="@+id/details_layout4"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="5dp" />
 
         </RelativeLayout>
 
         <Button
+            android:id="@+id/startrace_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_race"
+            android:background="#ff00ff40" />
+
+        <Button
             android:id="@+id/endrace_button"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/end_race_button" />
+            android:text="@string/end_race"
+            android:background="#c4ff3728" />
 
     </LinearLayout>
 </RelativeLayout>

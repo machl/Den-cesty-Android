@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import cz.machalik.bcthesis.dencesty.model.User;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
@@ -39,6 +40,10 @@ public class WebAPI {
 
     public static final DateFormat DATE_FORMAT_UPLOAD = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     public static final DateFormat DATE_FORMAT_DOWNLOAD = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+    static {
+        DATE_FORMAT_DOWNLOAD.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
 
     public static JSONObject synchronousLoginHandlerRequest(String email, String password) { // TODO: ošetřit nedostupné internetové připojení
         JSONObject jsonResponse = null;

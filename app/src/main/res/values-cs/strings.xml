@@ -9,7 +9,6 @@
     <string name="distance_comma_speed">vzdálenost, rychlost</string>
     <string name="elapsed_distance">Vzdálenost:</string>
     <string name="end_race">Ukončit závod</string>
-    <string name="end_race_button">Ukončit závod</string>
     <string name="error_field_required">Není vyplněn e-mail</string>
     <string name="error_incorrect_password">Heslo nebo email nejsou správně</string>
     <string name="error_invalid_email">Toto není platný e-mail</string>

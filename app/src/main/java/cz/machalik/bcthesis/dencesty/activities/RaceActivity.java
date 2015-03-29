@@ -35,6 +35,7 @@ public class RaceActivity extends Activity {
     private BroadcastReceiver mRaceInfoChangedReceiver;
 
     // UI references.
+    private Button mStartraceButton;
     private Button mEndraceButton;
     private Button mWalkersButton;
     private TextView mDistanceTextView;
@@ -47,6 +48,7 @@ public class RaceActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_race);
 
+        mStartraceButton = (Button) findViewById(R.id.startrace_button);
         mEndraceButton = (Button) findViewById(R.id.endrace_button);
         mWalkersButton = (Button) findViewById(R.id.walkers_button);
         mDistanceTextView = (TextView) findViewById(R.id.distance_textview);
@@ -55,6 +57,13 @@ public class RaceActivity extends Activity {
         mLocationUpdatesCounter = (TextView) findViewById(R.id.loccounter_textview);
 
         this.raceModel = RacesListActivity.preparedRaceModel;
+
+        mStartraceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startButtonPressed();
+            }
+        });
 
         mEndraceButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,12 +109,15 @@ public class RaceActivity extends Activity {
                 .registerReceiver(mRaceInfoChangedReceiver,
                         new IntentFilter(RaceModel.ACTION_RACE_INFO_CHANGED));
 
-
-
-        this.raceModel.startRace(this); // TODO: move to some button touch
+        // TODO: if raceMobdel.isStarted() then start location updates (maybe directly in raceModel?)
     }
 
-    protected void showDialogToEndRace() {
+    private void startButtonPressed() {
+        this.raceModel.startRace(this);
+        updateVisibilityOfButtons();
+    }
+
+    private void showDialogToEndRace() {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -129,18 +141,9 @@ public class RaceActivity extends Activity {
                 .show();
     }
 
-    protected void endRace() {
-        stopLocationUpdates();
-
-        // Dismiss Activity
-        finish();
-    }
-
-    /**
-     * Removes location updates from the BackgroundLocationService.
-     */
-    protected void stopLocationUpdates() {
+    private void endRace() {
         this.raceModel.stopRace(this);
+        updateVisibilityOfButtons();
     }
 
     @Override
@@ -150,7 +153,7 @@ public class RaceActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        stopLocationUpdates();
+        this.raceModel.stopRace(this);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mUnsentCounterReceiver); // TODO: if not null?
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRaceInfoChangedReceiver);
         super.onDestroy();
@@ -167,7 +170,16 @@ public class RaceActivity extends Activity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            showDialogToEndRace();
+            if (this.raceModel.isStarted()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Race in progress")
+                        .setMessage("Before returning to the race list, please, end the race!")
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+            } else {
+                // Dismiss Activity
+                finish();
+            }
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -189,7 +201,18 @@ public class RaceActivity extends Activity {
     }
 
     private void updateVisibilityOfButtons() {
-        // TODO
+        if (this.raceModel.isStarted()) {
+            // TODO: animation?
+            mStartraceButton.setVisibility(View.GONE);
+            mEndraceButton.setVisibility(View.VISIBLE);
+            // mBackButton setEnabled false
+        } else {
+            mEndraceButton.setVisibility(View.GONE);
+            mStartraceButton.setVisibility(View.VISIBLE);
+            // mBackButton setEnabled true
+        }
+
+        // TODO: check startTime a finishTime
     }
 
 }

@@ -7,16 +7,13 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.support.v4.content.LocalBroadcastManager;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.util.Date;
 
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
-import cz.machalik.bcthesis.dencesty.model.DistanceModel.Checkpoint;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
@@ -33,8 +30,7 @@ public class RaceModel {
 
     /****************************** Public API: ******************************/
 
-    public RaceModel() { // TODO: another info? int change to JSONData?
-    }
+    public RaceModel() {}
 
     public boolean init(int raceId) {
         JSONObject response = WebAPI.synchronousRaceDataRequest(raceId, User.getWalkerId());

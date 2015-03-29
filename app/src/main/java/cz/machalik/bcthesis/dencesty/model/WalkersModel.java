@@ -71,7 +71,7 @@ public class WalkersModel {
     private int numWalkersAhead;
     private int numWalkersBehind;
     private int numWalkersEnded;
-    private Walker[] walkersAhead; // TODO: ahead/behind/present předělat na Enum?
+    private Walker[] walkersAhead;
     private Walker[] walkersBehind;
 
     public WalkersModel(int raceId) {

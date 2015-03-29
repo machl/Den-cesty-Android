@@ -1,6 +1,6 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
-import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -33,6 +33,9 @@ public class RacesListActivity extends ListActivity {
 
     protected static final String TAG = "RacesListActivity";
 
+    private static final int TIMEINTERVAL_TO_SUPPRESS_REFRESHING = 5 * 60; // in seconds
+    private static final int TIMEINTERVAL_BEFORE_START_TO_ALLOW_CONTINUE = 10 * 60; // in seconds
+
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
@@ -49,6 +52,8 @@ public class RacesListActivity extends ListActivity {
     // UI references.
     private SwipeRefreshLayout mSwipeContainer;
     private DateFormat dateFormatter = DateFormat.getDateTimeInstance();
+
+    private Date lastTimeRefreshed = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +78,13 @@ public class RacesListActivity extends ListActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        attemptRefresh(); // TODO: pouze pokud to nedělal v poslední x minutách
+
+        if (this.lastTimeRefreshed == null ||
+                ((new Date().getTime() - this.lastTimeRefreshed.getTime()) / 1000) > TIMEINTERVAL_TO_SUPPRESS_REFRESHING)
+        {
+            showProgress(true);
+            attemptRefresh();
+        }
     }
 
     // TODO: logout button pressed
@@ -85,7 +96,7 @@ public class RacesListActivity extends ListActivity {
 
         // Show a progress spinner, and kick off a background task to
         // perform the race info refresh attempt.
-        showProgress(true);
+        // showProgress(true);
         mRefreshTask = new RacesUpdateAsyncTask(this);
         mRefreshTask.execute();
     }
@@ -110,6 +121,7 @@ public class RacesListActivity extends ListActivity {
 
             if (success) {
                 Log.i(TAG, "Successful RacesUpdate");
+                lastTimeRefreshed = new Date();
                 updateRacesList();
             } else {
                 Log.i(TAG, "Failed RacesUpdate");
@@ -228,7 +240,18 @@ public class RacesListActivity extends ListActivity {
 
         RaceItem selectedItem = (RaceItem) getListView().getItemAtPosition(position);
 
-        attemptLoadRace(selectedItem.id); // TODO: allow only if > starttime - delta
+        long secondsSinceStart = (new Date().getTime() - selectedItem.startTime.getTime()) / 1000;
+        if (secondsSinceStart > -TIMEINTERVAL_BEFORE_START_TO_ALLOW_CONTINUE) {
+            attemptLoadRace(selectedItem.id);
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Too soon...")
+                    .setMessage("Information about the race will be available 10 minutes before the start.")
+                    .setPositiveButton(android.R.string.ok, null)
+                    //.setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
+
     }
 
     private void attemptLoadRace(int raceId) {
