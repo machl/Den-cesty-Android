@@ -24,14 +24,18 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.FirstScreenActivity"
-            android:label="@string/title_activity_first_screen"
-            android:screenOrientation="sensorPortrait" >
+            android:name=".activities.RacesListActivity"
+            android:label="@string/title_activity_races_list"
+            android:parentActivityName=".activities.LoginActivity" >
         </activity>
         <activity
             android:name=".activities.RaceActivity"
             android:label="@string/title_activity_race"
             android:screenOrientation="sensorPortrait" >
+        </activity>
+        <activity
+            android:name=".activities.WalkersListActivity"
+            android:label="@string/title_activity_walkers_list" >
         </activity>
 
         <service
@@ -43,14 +47,6 @@
             android:exported="false" >
         </service>
 
-        <activity
-            android:name=".activities.RacesListActivity"
-            android:label="@string/title_activity_races_list" >
-        </activity>
-        <activity
-            android:name=".activities.WalkersListActivity"
-            android:label="@string/title_activity_walkers_list" >
-        </activity>
     </application>
 
 </manifest>

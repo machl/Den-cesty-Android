@@ -1,6 +1,8 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
+import android.app.ActionBar;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -17,12 +19,14 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import cz.machalik.bcthesis.dencesty.R;
+import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 public class RacesListActivity extends ListActivity {
@@ -33,11 +37,18 @@ public class RacesListActivity extends ListActivity {
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
     private RacesUpdateAsyncTask mRefreshTask = null;
+    private LoadRaceTask mLoadRaceTask = null;
 
     private List<RaceItem> races = new ArrayList<>();
 
+    /**
+     * Variable for passing loaded RaceModel to another activity
+     */
+    public static RaceModel preparedRaceModel = null;
+
     // UI references.
     private SwipeRefreshLayout mSwipeContainer;
+    private DateFormat dateFormatter = DateFormat.getDateTimeInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,28 +63,20 @@ public class RacesListActivity extends ListActivity {
             }
         });
 
+        //ActionBar actionBar = getActionBar();
+        //actionBar.setDisplayHomeAsUpEnabled(true);
+
         // assign the list adapter
         setListAdapter(new RacesListAdapter(this));
     }
 
     @Override
-    protected void onListItemClick(ListView list, View view, int position, long id) {
-        super.onListItemClick(list, view, position, id);
-
-        RaceItem selectedItem = (RaceItem) getListView().getItemAtPosition(position);
-
-        Log.d(TAG, "Launching RaceActivity with ID "+selectedItem.id);
-
-        Intent intent = new Intent(this, RaceActivity.class);
-        intent.putExtra(RaceActivity.EXTRA_RACE_ID, selectedItem.id);
-        startActivity(intent);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
-        attemptRefresh();
+        attemptRefresh(); // TODO: pouze pokud to nedělal v poslední x minutách
     }
+
+    // TODO: logout button pressed
 
     private void attemptRefresh() {
         if (mRefreshTask != null) {
@@ -212,10 +215,80 @@ public class RacesListActivity extends ListActivity {
 
             nameCS.setText(item.nameCS);
             nameEN.setText(item.nameEN);
-            startTime.setText(item.startTime.toString()); // TODO: lepsi formatovani casu
-            finishTime.setText(item.finishTime.toString());
+            startTime.setText(dateFormatter.format(item.startTime)); // TODO: lepsi formatovani casu
+            finishTime.setText(dateFormatter.format(item.finishTime));
 
             return convertView;
         }
+    }
+
+    @Override
+    protected void onListItemClick(ListView list, View view, int position, long id) {
+        super.onListItemClick(list, view, position, id);
+
+        RaceItem selectedItem = (RaceItem) getListView().getItemAtPosition(position);
+
+        attemptLoadRace(selectedItem.id); // TODO: allow only if > starttime - delta
+    }
+
+    private void attemptLoadRace(int raceId) {
+        mLoadRaceTask = new LoadRaceTask(this, raceId);
+        mLoadRaceTask.execute();
+    }
+
+    private class LoadRaceTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final Context mContext;
+        private final int mRaceId;
+        private ProgressDialog dialog;
+
+        public LoadRaceTask(Context context, int raceId) {
+            mContext = context;
+            mRaceId = raceId;
+            dialog = new ProgressDialog(context);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            dialog.setMessage("Downloading race data...");
+            dialog.show();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            preparedRaceModel = new RaceModel();
+            return preparedRaceModel.init(mRaceId);
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mLoadRaceTask = null;
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+
+            if (success) {
+                Log.i(TAG, "Successful LoadRace");
+                onSuccessfulLoadRace();
+            } else {
+                Log.i(TAG, "Failed LoadRace");
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mLoadRaceTask = null;
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            Log.i(TAG, "Cancelled RaceInit");
+        }
+    }
+
+    private void onSuccessfulLoadRace() {
+        Log.d(TAG, "Launching RaceActivity with ID "+preparedRaceModel.getRaceId());
+
+        Intent intent = new Intent(this, RaceActivity.class);
+        startActivity(intent);
     }
 }

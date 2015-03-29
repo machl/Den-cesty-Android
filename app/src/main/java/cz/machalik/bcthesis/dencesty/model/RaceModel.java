@@ -33,68 +33,63 @@ public class RaceModel {
 
     /****************************** Public API: ******************************/
 
-    public RaceModel(int raceId) { // TODO: another info? int change to JSONData?
-        this.raceId = raceId;
+    public RaceModel() { // TODO: another info? int change to JSONData?
     }
 
-    public boolean init() {
-        JSONObject response = WebAPI.synchronousRaceDataRequest(this.raceId);
+    public boolean init(int raceId) {
+        JSONObject response = WebAPI.synchronousRaceDataRequest(raceId, User.getWalkerId());
 
-        if (response == null || !response.has("race_info") || !response.has("race_checkpoints")) {
+        if (response == null || !response.has("race") || !response.has("checkpoints")) {
             return false;
         }
 
         // Process race_info:
-        final JSONObject raceInfo = response.optJSONObject("race_info");
-        Date startTime = null;
-        try {
+        final JSONObject raceInfo = response.optJSONObject("race");
+        this.raceId = raceInfo.optInt("id");
 
-            startTime = WebAPI.DATE_FORMAT_DOWNLOAD.parse(raceInfo.optString("start_time"));
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return false;
+        // Process scoreboard:
+        final JSONObject scoreboard = response.optJSONObject("scoreboard");
+        if (scoreboard != null && scoreboard.length() > 0) {
+            this.isStarted = (1 == scoreboard.optInt("raceState"));
+        } else {
+            this.isStarted = false;
         }
 
-        // Process race_checkpoints:
-        final JSONArray raceCheckpoints = response.optJSONArray("race_checkpoints");
-        Checkpoint[] checkpoints = new Checkpoint[raceCheckpoints.length()];
-        for (int i = 0; i < raceCheckpoints.length(); i++) {
-            final JSONObject o = raceCheckpoints.optJSONObject(i);
-            checkpoints[i] = new Checkpoint(o.optInt("checkid"),
-                                            o.optInt("meters"),
-                                            o.optDouble("latitude"),
-                                            o.optDouble("longitude"));
-        }
-
-        this.distanceModel.init(checkpoints, startTime);
+        this.distanceModel.init(response);
 
         return true;
     }
 
     public void startRace(Context context) {
-        // Create new start race event
-        Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
-        event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
-        EventUploaderService.addEvent(context, event);
+        if (!this.isStarted) {
+            // Create new start race event
+            Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
+            event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
+            EventUploaderService.addEvent(context, event);
 
-        // Register broadcast receiver on location updates
-        mLocationChangedReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(BackgroundLocationService.ACTION_LOCATION_CHANGED)) {
-                    onLocationChanged(context, BackgroundLocationService.getLastKnownLocation());
+            // Register broadcast receiver on location updates
+            mLocationChangedReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (intent.getAction().equals(BackgroundLocationService.ACTION_LOCATION_CHANGED)) {
+                        onLocationChanged(context, BackgroundLocationService.getLastKnownLocation());
+                    }
                 }
-            }
-        };
-        LocalBroadcastManager.getInstance(context)
-                .registerReceiver(mLocationChangedReceiver,
-                        new IntentFilter(BackgroundLocationService.ACTION_LOCATION_CHANGED));
+            };
+            LocalBroadcastManager.getInstance(context)
+                    .registerReceiver(mLocationChangedReceiver,
+                            new IntentFilter(BackgroundLocationService.ACTION_LOCATION_CHANGED));
 
-        // Start background location service
-        BackgroundLocationService.start(context);
+            // Start background location service
+            BackgroundLocationService.start(context);
+
+            this.isStarted = true;
+        }
     }
 
     public void stopRace(Context context) {
+        this.isStarted = false;
+
         // Stop background location service
         boolean wasRunning = BackgroundLocationService.stop(context);
 

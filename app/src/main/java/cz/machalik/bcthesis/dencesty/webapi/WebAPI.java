@@ -33,9 +33,9 @@ public class WebAPI {
 
     public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/api/login.json";
     public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/api/push_events.json";
-    public static final String URL_WALKERSLIST = URL_WEBSERVER + "/api/scoreboard/%d.json?walker_id=%d";
     public static final String URL_RACESLIST = URL_WEBSERVER + "/api/races.json";
-    public static final String URL_RACEDATA = URL_WEBSERVER + "/api/race_data/%d.json";
+    public static final String URL_RACEDATA = URL_WEBSERVER + "/api/race_data/%d.json?walker_id=%d";
+    public static final String URL_WALKERSLIST = URL_WEBSERVER + "/api/scoreboard/%d.json?walker_id=%d";
 
     public static final DateFormat DATE_FORMAT_UPLOAD = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     public static final DateFormat DATE_FORMAT_DOWNLOAD = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -113,7 +113,7 @@ public class WebAPI {
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(String.format(URL_EVENTHANDLER));
+            URL url = new URL(URL_EVENTHANDLER);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
@@ -303,7 +303,7 @@ public class WebAPI {
         return jsonResponse;
     }
 
-    public static JSONObject synchronousRaceDataRequest(int raceId) {
+    public static JSONObject synchronousRaceDataRequest(int raceId, int walkerId) {
         if (!User.isLogged()) {
             Log.e(TAG, "User is not logged to do synchronousRaceDataRequest!");
             return null;
@@ -312,7 +312,7 @@ public class WebAPI {
         JSONObject jsonResponse = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(String.format(URL_RACEDATA, raceId));
+            URL url = new URL(String.format(URL_RACEDATA, raceId, walkerId));
             urlConnection = (HttpURLConnection) url.openConnection();
             //urlConnection.setDoInput(false);
             urlConnection.setDoOutput(true);

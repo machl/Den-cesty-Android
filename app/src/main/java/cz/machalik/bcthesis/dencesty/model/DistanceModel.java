@@ -2,7 +2,16 @@ package cz.machalik.bcthesis.dencesty.model;
 
 import android.location.Location;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+
+import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
  * Lukáš Machalík
@@ -20,9 +29,40 @@ public class DistanceModel {
 
     public DistanceModel() { }
 
-    public void init(Checkpoint[] checkpoints, Date startTime) {
-        this.checkpoints = checkpoints;
-        this.startTime = startTime;
+    public void init(JSONObject data) {
+        final JSONObject raceInfo = data.optJSONObject("race");
+        this.startTime = null;
+        try {
+            this.startTime = WebAPI.DATE_FORMAT_DOWNLOAD.parse(raceInfo.optString("start_time"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        final JSONObject scoreboard = data.optJSONObject("scoreboard");
+        if (scoreboard != null) {
+            this.distance = scoreboard.optInt("distance");
+            this.avgSpeed = scoreboard.optDouble("avgSpeed");
+            this.lastCheckpoint = scoreboard.optInt("lastCheckpoint");
+        }
+
+        // Process race_checkpoints:
+        final JSONArray raceCheckpoints = data.optJSONArray("checkpoints");
+        this.checkpoints = new Checkpoint[raceCheckpoints.length()];
+        for (int i = 0; i < raceCheckpoints.length(); i++) {
+            final JSONObject o = raceCheckpoints.optJSONObject(i);
+            checkpoints[i] = new Checkpoint(o.optInt("checkid"),
+                    o.optInt("meters"),
+                    o.optDouble("latitude"),
+                    o.optDouble("longitude"));
+        }
+
+        Arrays.sort(this.checkpoints, new Comparator<Checkpoint>() {
+            @Override
+            public int compare(Checkpoint lhs, Checkpoint rhs) {
+                return lhs.id - rhs.id;
+            }
+        });
     }
 
     public void onLocationChanged(Location location) {
@@ -32,6 +72,7 @@ public class DistanceModel {
         if (newDistance > this.distance) {
             this.distance = newDistance;
             this.avgSpeed = calculateAvgSpeed(location);
+            // TODO: notify distance changed pro účely mapy
         } else {
             // TODO: upozorneni na sejiti z trasy (po nekolika location updatech mimo)
         }

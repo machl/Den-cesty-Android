@@ -27,8 +27,6 @@ public class Event implements Serializable {
     public static final String EVENTTYPE_STARTRACE = "StartRace";
     public static final String EVENTTYPE_STOPRACE = "StopRace";
     public static final String EVENTTYPE_LOCATIONUPDATE = "LocationUpdate";
-    public static final String EVENTTYPE_CHECKPOINT = "Checkpoint";
-    public static final String EVENTTYPE_USERREFRESH = "UserRefresh";
     public static final String EVENTTYPE_ERROR = "Error";
     public static final String EVENTTYPE_WARNING = "Warning";
     public static final String EVENTTYPE_LOG = "Log";

@@ -6,6 +6,9 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.util.Date;
+
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
@@ -75,7 +78,11 @@ public class WalkersModel {
         this.raceId = raceId;
 
         // Basic init:
-        this.presentWalker = new Walker(User.getWalkerUsername(), 0, 0);
+        this.presentWalker = new Walker(User.getWalkerFullName(),
+                                        0,
+                                        0,
+                                        RaceState.NOTSTARTED,
+                                        null);
         this.walkersAhead = new Walker[0];
         this.walkersBehind = new Walker[0];
     }
@@ -90,24 +97,40 @@ public class WalkersModel {
             return;
         }
 
-        presentWalker = new Walker(User.getWalkerUsername(), jsonData.optInt("distance"), jsonData.optDouble("speed"));
+        try {
+            presentWalker = new Walker(User.getWalkerFullName(),
+                    jsonData.optInt("distance"),
+                    jsonData.optDouble("speed"),
+                    jsonData.optInt("raceState"),
+                    WebAPI.DATE_FORMAT_DOWNLOAD.parse(jsonData.optString("updated_at")));
 
-        numWalkersAhead = jsonData.optInt("numWalkersAhead");
-        numWalkersBehind = jsonData.optInt("numWalkersBehind");
-        numWalkersEnded = jsonData.optInt("numWalkersEnded");
+            numWalkersAhead = jsonData.optInt("numWalkersAhead");
+            numWalkersBehind = jsonData.optInt("numWalkersBehind");
+            numWalkersEnded = jsonData.optInt("numWalkersEnded");
 
-        final JSONArray walkersAheadJsonArray = jsonData.optJSONArray("walkersAhead");
-        walkersAhead = new Walker[walkersAheadJsonArray.length()];
-        for (int i = 0; i < walkersAheadJsonArray.length(); i++) {
-            final JSONObject o = walkersAheadJsonArray.optJSONObject(i);
-            walkersAhead[i] = new Walker(o.optString("name"), o.optInt("distance"), o.optDouble("speed"));
-        }
+            final JSONArray walkersAheadJsonArray = jsonData.optJSONArray("walkersAhead");
+            walkersAhead = new Walker[walkersAheadJsonArray.length()];
+            for (int i = 0; i < walkersAheadJsonArray.length(); i++) {
+                final JSONObject o = walkersAheadJsonArray.optJSONObject(i);
+                walkersAhead[i] = new Walker(o.optString("name"),
+                                             o.optInt("distance"),
+                                             o.optDouble("speed"),
+                                             o.optInt("raceState"),
+                                             WebAPI.DATE_FORMAT_DOWNLOAD.parse(o.optString("updated_at")));
+            }
 
-        final JSONArray walkersBehindJsonArray = jsonData.optJSONArray("walkersBehind");
-        walkersBehind = new Walker[walkersBehindJsonArray.length()];
-        for (int i = 0; i < walkersBehindJsonArray.length(); i++) {
-            final JSONObject o = walkersBehindJsonArray.optJSONObject(i);
-            walkersBehind[i] = new Walker(o.optString("name"), o.optInt("distance"), o.optDouble("speed"));
+            final JSONArray walkersBehindJsonArray = jsonData.optJSONArray("walkersBehind");
+            walkersBehind = new Walker[walkersBehindJsonArray.length()];
+            for (int i = 0; i < walkersBehindJsonArray.length(); i++) {
+                final JSONObject o = walkersBehindJsonArray.optJSONObject(i);
+                walkersBehind[i] = new Walker(o.optString("name"),
+                                              o.optInt("distance"),
+                                              o.optDouble("speed"),
+                                              o.optInt("raceState"),
+                                              WebAPI.DATE_FORMAT_DOWNLOAD.parse(o.optString("updated_at")));
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 
@@ -115,11 +138,21 @@ public class WalkersModel {
         public final String name;
         public final int distance;
         public final double avgSpeed;
+        public final int raceState;
+        public final Date updatedAt;
 
-        public Walker(String name, int distance, double avgSpeed) {
+        public Walker(String name, int distance, double avgSpeed, int raceState, Date updatedAt) {
             this.name = name;
             this.distance = distance;
             this.avgSpeed = avgSpeed;
+            this.raceState = raceState;
+            this.updatedAt = updatedAt;
         }
+    }
+
+    public static class RaceState {
+        public static final int NOTSTARTED = 0;
+        public static final int STARTED = 1;
+        public static final int ENDED = 2;
     }
 }

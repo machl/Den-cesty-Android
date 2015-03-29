@@ -22,46 +22,12 @@ public class FirstScreenActivity extends Activity {
 
     protected static final String TAG = "FirstScreenActivity";
 
-    // UI references.
-    private TextView mFullnameTextView;
-    private TextView mUsernameTextView;
-    private Button mStartRaceButton;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_first_screen);
-
-        mFullnameTextView = (TextView) findViewById(R.id.fullname_textview);
-        mUsernameTextView = (TextView) findViewById(R.id.username_textview);
-
-        mStartRaceButton = (Button) findViewById(R.id.start_race_button);
-        mStartRaceButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onStartRaceButtonHandler(v);
-            }
-        });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        mFullnameTextView.setText(User.getWalkerFullName());
-        mUsernameTextView.setText(User.getWalkerUsername());
-    }
-
     /**
      * Handles the Start Updates button and requests start of location updates.
      */
     protected void onStartRaceButtonHandler(View view) {
-        if (servicesConnected() && locationEnabled()) {
+        if (servicesConnected() && locationEnabled()) { // TODO: move to RaceActivity
             // Requests location updates from the BackgroundLocationService.
-
-            Intent intent = new Intent(this, RaceActivity.class);
-            intent.putExtra(RaceActivity.EXTRA_RACE_ID, 20);
-            startActivity(intent);
         }
     }
 

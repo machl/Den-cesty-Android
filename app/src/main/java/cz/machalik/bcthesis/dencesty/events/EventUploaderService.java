@@ -69,12 +69,12 @@ public class EventUploaderService extends IntentService {
      *
      * @see IntentService
      */
-    public static void removeEvents(Context context, int[] ids) {
+    /*public static void removeEvents(Context context, int[] ids) {
         Intent intent = new Intent(context, EventUploaderService.class);
         intent.setAction(ACTION_REMOVE_EVENTS);
         intent.putExtra(EXTRA_IDS, ids);
         context.startService(intent);
-    }
+    }*/
 
     public static int getEventQueueSize() {
         return eventQueueSize;
@@ -85,10 +85,10 @@ public class EventUploaderService extends IntentService {
 
     private static final String ACTION_ADD_EVENT = "cz.machalik.bcthesis.dencesty.action.ADD_EVENT";
     private static final String ACTION_PERFORM_UPLOAD = "cz.machalik.bcthesis.dencesty.action.PERFORM_UPLOAD";
-    private static final String ACTION_REMOVE_EVENTS = "cz.machalik.bcthesis.dencesty.action.REMOVE_EVENTS";
+    //private static final String ACTION_REMOVE_EVENTS = "cz.machalik.bcthesis.dencesty.action.REMOVE_EVENTS";
 
     private static final String EXTRA_EVENT = "cz.machalik.bcthesis.dencesty.extra.EVENT";
-    private static final String EXTRA_IDS = "cz.machalik.bcthesis.dencesty.extra.IDS";
+    //private static final String EXTRA_IDS = "cz.machalik.bcthesis.dencesty.extra.IDS";
 
     private static EventQueue eventQueue = new EventQueue();
 
@@ -107,10 +107,10 @@ public class EventUploaderService extends IntentService {
                 handleActionAddEvent(event);
             } else if (ACTION_PERFORM_UPLOAD.equals(action)) {
                 handleActionUpload();
-            }else if (ACTION_REMOVE_EVENTS.equals(action)) {
+            } /*else if (ACTION_REMOVE_EVENTS.equals(action)) {
                 final int[] ids = intent.getIntArrayExtra(EXTRA_IDS);
                 handleActionRemoveEvents(ids);
-            }
+            }*/
         }
     }
 
@@ -149,7 +149,8 @@ public class EventUploaderService extends IntentService {
                             savedIds[i] = savedIdsJsonArray.getInt(i);
                         }
 
-                        EventUploaderService.removeEvents(this, savedIds);
+                        //EventUploaderService.removeEvents(this, savedIds);
+                        handleActionRemoveEvents(savedIds);
 
                     } catch (JSONException e) {
                         String message = "Event upload response: JSONException: " + e.getLocalizedMessage();
