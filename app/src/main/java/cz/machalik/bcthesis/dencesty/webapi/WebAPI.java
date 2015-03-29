@@ -29,8 +29,8 @@ public class WebAPI {
     protected static final String TAG = "WebAPI";
 
     //public static final String URL_WEBSERVER = "http://46.13.199.141:3000";
-    public static final String URL_WEBSERVER = "http://machalik.kolej.mff.cuni.cz:3000";
-    //public static final String URL_WEBSERVER = "https://www.dencesty.cz"; // must be with 'www.' !
+    //public static final String URL_WEBSERVER = "http://machalik.kolej.mff.cuni.cz:3000";
+    public static final String URL_WEBSERVER = "https://www.dencesty.cz"; // must be with 'www.' !
 
     public static final String URL_LOGINHANDLER = URL_WEBSERVER + "/api/login.json";
     public static final String URL_EVENTHANDLER = URL_WEBSERVER + "/api/push_events.json";
