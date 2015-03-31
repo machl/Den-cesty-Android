@@ -8,6 +8,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import cz.machalik.bcthesis.dencesty.BuildConfig;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
@@ -22,23 +23,27 @@ public class User {
 
     /****************************** Public API: ******************************/
 
-    public static boolean attemptLogin(Context context, String email, String password) {
+    public enum LoginResult {
+        SUCCESS, FAILED, CONNECTION_ERROR
+    }
+
+    public static LoginResult attemptLogin(Context context, String email, String password) {
         JSONObject jsonResponse = WebAPI.synchronousLoginHandlerRequest(email, password);
 
-        if (jsonResponse != null) {
-            boolean success = jsonResponse.optBoolean("success");
-            if (success) {
-                onSuccessfulLogin(context, jsonResponse);
-                saveCreditials(context, email, password);
-                return true;
-            } else {
-                Log.i(TAG, "Login: wrong email or password");
-                removeCreditials(context);
-                return false;
-            }
+        if (jsonResponse == null) {
+            return LoginResult.CONNECTION_ERROR;
         }
 
-        return false;
+        boolean success = jsonResponse.optBoolean("success");
+        if (success) {
+            onSuccessfulLogin(context, jsonResponse);
+            saveCreditials(context, email, password);
+            return LoginResult.SUCCESS;
+        } else {
+            Log.i(TAG, "Login: wrong email or password");
+            removeCreditials(context);
+            return LoginResult.FAILED;
+        }
     }
 
     public static void logout(Context context) {
@@ -115,6 +120,7 @@ public class User {
         event.getExtras().put("systemName", Build.VERSION.RELEASE + " " + Build.VERSION.CODENAME);
         event.getExtras().put("sdk", Integer.valueOf(Build.VERSION.SDK_INT));
         event.getExtras().put("model", Build.MODEL);
+        event.getExtras().put("appVersion", BuildConfig.VERSION_NAME);
         // TODO: info o povolených polohových službách, internetu ...?
 
         EventUploaderService.addEvent(context, event);

@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.User;
+import cz.machalik.bcthesis.dencesty.model.User.LoginResult;
 
 /**
  * A login screen that offers login via email/password.
@@ -194,11 +196,24 @@ public class LoginActivity extends Activity {
         startActivity(intent);
     }
 
+    private void onFailedLogin() {
+        mPasswordView.setError(getString(R.string.error_incorrect_password));
+        mPasswordView.requestFocus();
+    }
+
+    private void onConnectionError() {
+        new AlertDialog.Builder(this)
+                .setTitle("Connection error")
+                .setMessage("Check your network connection, please.")
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    private class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    private class UserLoginTask extends AsyncTask<Void, Void, LoginResult> {
 
         private final Context mContext;
         private final String mEmail;
@@ -211,20 +226,27 @@ public class LoginActivity extends Activity {
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected LoginResult doInBackground(Void... params) {
             return User.attemptLogin(mContext, mEmail, mPassword);
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final LoginResult result) {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
-                onSuccessfulLogin();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+            switch (result) {
+                case SUCCESS:
+                    onSuccessfulLogin();
+                    break;
+                case FAILED:
+                    onFailedLogin();
+                    break;
+                case CONNECTION_ERROR:
+                    onConnectionError();
+                    break;
+                default:
+                    break;
             }
         }
 
