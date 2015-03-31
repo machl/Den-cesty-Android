@@ -54,10 +54,6 @@ public class User {
         return walkerId;
     }
 
-    public static String getWalkerUsername() {
-        return walkerUsername;
-    }
-
     public static String getWalkerFullName() {
         return walkerName + " " + walkerSurname;
     }
@@ -101,10 +97,9 @@ public class User {
     private static int walkerId;
     private static String walkerName;
     private static String walkerSurname;
-    private static String walkerUsername;
 
     private static void onSuccessfulLogin(Context context, JSONObject jsonData) {
-        if (!jsonData.has("id") || !jsonData.has("name") || !jsonData.has("surname") || !jsonData.has("username")) {
+        if (!jsonData.has("id") || !jsonData.has("name") || !jsonData.has("surname")) {
             String message = "Response login missing info";
             Log.e(TAG, message);
             FileLogger.log(TAG, message);
@@ -114,7 +109,6 @@ public class User {
         walkerId = jsonData.optInt("id");
         walkerName = jsonData.optString("name");
         walkerSurname = jsonData.optString("surname");
-        walkerUsername = jsonData.optString("username");
         isLogged = true;
 
         Event event = new Event(context, walkerId, Event.EVENTTYPE_LOGIN);

@@ -136,7 +136,11 @@ public class RacesListActivity extends ListActivity {
     }
 
     private Boolean processResponse(JSONArray response) {
-        //races = new ArrayList<>(response.length());
+
+        if (response == null) {
+            return false;
+        }
+
         races.clear();
         for (int i = 0; i < response.length(); i++) {
             final JSONObject o = response.optJSONObject(i);
