@@ -1,19 +1,21 @@
 <resources>
 
-    <color name="white_opaque">#FFFFFFFF</color>
+    <!-- http://android-holo-colors.com/ -->
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:background">@color/white_opaque</item>
-        <item name="android:windowBackground">@color/white_opaque</item>
-        <item name="android:colorBackground">@color/white_opaque</item>
+    <style name="orange_action_bar" parent="android:Widget.Holo.ActionBar">
+        <item name="android:background">#99ff8800</item>
     </style>
 
-    <!-- Race activity entries: -->
-    <color name="counter_default">#000000</color>
-    <color name="counter_highlighted">#FF0000</color>
-    <color name="listitem_ahead">#CAF866</color>
-    <color name="listitem_me">#E6E6E6</color>
-    <color name="listitem_behind">#FF8000</color>
+    <!-- Login activity entries: -->
+    <color name="orange">#ffffa700</color>
 
+    <!-- Race activity entries: -->
+    <color name="counter_default">@android:color/primary_text_dark</color>
+    <color name="counter_highlighted">#FFFF0000</color>
+    <color name="startrace_button">#ff00cb33</color>
+    <color name="endrace_button">#c4d80002</color>
+
+    <!-- Walkers list entries: -->
+    <color name="listitem_me">#ff363636</color>
+    <color name="raceended_textview">@color/orange</color>
 </resources>

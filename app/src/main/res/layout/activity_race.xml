@@ -141,14 +141,14 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/start_race"
-            android:background="#ff00ff40" />
+            android:background="@color/startrace_button" />
 
         <Button
             android:id="@+id/endrace_button"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/end_race"
-            android:background="#c4ff3728" />
+            android:background="@color/endrace_button" />
 
     </LinearLayout>
 </RelativeLayout>

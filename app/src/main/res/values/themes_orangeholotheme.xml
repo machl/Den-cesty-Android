@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Generated with http://android-holo-colors.com -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <style name="OrangeHoloTheme" parent="android:Theme.Holo">
+
+    <item name="android:editTextBackground">@drawable/orangeholotheme_edit_text_holo_dark</item>
+
+    <item name="android:textColorHighlight">#99ff8800</item>
+    <item name="android:textSelectHandleLeft">@drawable/orangeholotheme_text_select_handle_left</item>
+    <item name="android:textSelectHandleRight">@drawable/orangeholotheme_text_select_handle_right</item>
+    <item name="android:textSelectHandle">@drawable/orangeholotheme_text_select_handle_middle</item>
+
+    <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextViewOrangeHoloTheme</item>
+
+    <item name="android:buttonStyle">@style/ButtonOrangeHoloTheme</item>
+
+    <item name="android:imageButtonStyle">@style/ImageButtonOrangeHoloTheme</item>
+
+    <item name="android:listChoiceBackgroundIndicator">@drawable/orangeholotheme_list_selector_holo_dark</item>
+
+    <item name="android:activatedBackgroundIndicator">@drawable/orangeholotheme_activated_background_holo_dark</item>
+
+    <item name="android:fastScrollThumbDrawable">@drawable/orangeholotheme_fastscroll_thumb_holo</item>
+
+    <item name="android:actionBarStyle">@style/orange_action_bar</item>
+
+  </style>
+
+</resources>

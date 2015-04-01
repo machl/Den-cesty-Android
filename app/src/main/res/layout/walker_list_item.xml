@@ -27,7 +27,7 @@
             android:textSize="16sp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textColor="#b5ff0001"
+            android:textColor="@color/raceended_textview"
             android:background="@android:color/transparent" />
 
     </LinearLayout>

@@ -23,6 +23,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/login_headline"
+                android:textColor="@color/orange"
                 android:id="@+id/textView"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center"
