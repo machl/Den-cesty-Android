@@ -1,64 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:orientation="horizontal"
-android:layout_width="fill_parent"
-android:layout_height="wrap_content"
-android:padding="10dp">
-
-<LinearLayout
-    android:orientation="vertical"
-    android:layout_alignParentLeft="true"
-    android:layout_toLeftOf="@+id/rightLinearLayout"
+    android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_centerVertical="true"
-    android:background="@android:color/transparent">
+    android:padding="10dp">
 
-    <TextView android:id="@+id/nameLabel"
-        android:text="Name Surname"
-        android:textSize="16sp"
-        android:textStyle="bold"
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/rightLinearLayout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent" />
+        android:layout_centerVertical="true"
+        android:background="@android:color/transparent">
 
-    <TextView android:id="@+id/infoLabel"
-        android:text="Ended"
-        android:textSize="16sp"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#b5ff0001"
-        android:background="@android:color/transparent" />
+        <TextView android:id="@+id/nameLabel"
+            android:text="Name Surname"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent" />
 
-</LinearLayout>
+        <TextView android:id="@+id/infoLabel"
+            android:text="Ended"
+            android:textSize="16sp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#b5ff0001"
+            android:background="@android:color/transparent" />
 
-<LinearLayout
-    android:id="@+id/rightLinearLayout"
-    android:orientation="vertical"
-    android:layout_alignParentRight="true"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:paddingLeft="5dp"
-    android:gravity="right"
-    android:background="@android:color/transparent">
+    </LinearLayout>
 
-    <TextView android:id="@+id/progressLabel"
-        android:text="0 m, 0 km/h"
-        android:textSize="16sp"
+    <LinearLayout
+        android:id="@+id/rightLinearLayout"
+        android:orientation="vertical"
+        android:layout_alignParentRight="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingLeft="5dp"
         android:gravity="right"
-        android:textAlignment="gravity"
-        android:background="@android:color/transparent" />
+        android:background="@android:color/transparent">
 
-    <TextView android:id="@+id/timeLabel"
-        android:text="66 seconds ago"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="right"
-        android:textAlignment="gravity"
-        android:background="@android:color/transparent" />
+        <TextView android:id="@+id/progressLabel"
+            android:text="0 m, 0 km/h"
+            android:textSize="16sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:textAlignment="gravity"
+            android:background="@android:color/transparent" />
 
-</LinearLayout>
+        <TextView android:id="@+id/timeLabel"
+            android:text="66 seconds ago"
+            android:textSize="16sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:textAlignment="gravity"
+            android:background="@android:color/transparent" />
+
+    </LinearLayout>
 </RelativeLayout>

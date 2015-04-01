@@ -11,145 +11,130 @@
 
     <LinearLayout
         android:id="@+id/race_main_layout"
-        android:visibility="visible"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
-        <RelativeLayout
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dip"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:id="@+id/scrollView">
 
             <LinearLayout
-                android:id="@+id/details_layout1"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                android:weightSum="2">
+                android:id="@+id/details_layout"
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:text="@string/elapsed_distance"
-                    android:layout_weight="1"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textSize="14sp"
-                    android:gravity="center_vertical" />
+                    android:gravity="start" />
 
                 <TextView
                     android:id="@+id/distance_textview"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="0 m"
-                    android:layout_weight="1"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textSize="22sp"
-                    android:gravity="center_vertical" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/details_layout2"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/details_layout1"
-                android:layout_centerHorizontal="true"
-                android:weightSum="2"
-                android:layout_marginTop="5dp">
+                    android:gravity="center"
+                    android:layout_marginTop="5dp" />
 
                 <TextView
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:text="@string/avg_speed"
-                    android:layout_weight="1"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textSize="14sp"
-                    android:gravity="center_vertical" />
+                    android:gravity="start" />
 
                 <TextView
                     android:id="@+id/avgspeed_textview"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="0 km/h"
-                    android:layout_weight="1"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="22sp"
-                    android:gravity="center_vertical" />
-            </LinearLayout>
+                    android:textSize="21sp"
+                    android:gravity="center"
+                    android:layout_marginTop="5dp" />
 
-            <LinearLayout
-                android:id="@+id/details_layout3"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/details_layout2"
-                android:layout_centerHorizontal="true"
-                android:weightSum="2"
-                android:layout_marginTop="5dp">
-
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:text="@string/unsent_messages"
-                    android:layout_weight="1"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textSize="12sp"
-                    android:gravity="center_vertical" />
-
-                <TextView
-                    android:id="@+id/unsent_textview"
+                <LinearLayout
+                    android:id="@+id/details_layout2"
+                    android:orientation="horizontal"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="0"
-                    android:layout_weight="1"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="22sp"
-                    android:gravity="center_vertical" />
-            </LinearLayout>
+                    android:layout_marginTop="5dp"
+                    android:weightSum="2">
 
-            <LinearLayout
-                android:id="@+id/details_layout4"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/details_layout3"
-                android:layout_centerHorizontal="true"
-                android:weightSum="2"
-                android:layout_marginTop="5dp">
+                    <LinearLayout
+                        android:id="@+id/details_layout3"
+                        android:orientation="vertical"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:text="@string/num_of_location_updates"
-                    android:layout_weight="1"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textSize="12sp"
-                    android:gravity="center_vertical" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unsent_messages"
+                            android:textAppearance="?android:attr/textAppearanceSmall"
+                            android:textSize="12sp"
+                            android:gravity="center" />
 
-                <TextView
-                    android:id="@+id/loccounter_textview"
+                        <TextView
+                            android:id="@+id/unsent_textview"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textAppearance="?android:attr/textAppearanceLarge"
+                            android:textSize="22sp"
+                            android:gravity="center" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/details_layout4"
+                        android:orientation="vertical"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/num_of_location_updates"
+                            android:textAppearance="?android:attr/textAppearanceSmall"
+                            android:textSize="12sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:id="@+id/loccounter_textview"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textAppearance="?android:attr/textAppearanceLarge"
+                            android:textSize="22sp"
+                            android:gravity="center" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <Button
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="0"
-                    android:layout_weight="1"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="22sp"
-                    android:gravity="center_vertical" />
+                    android:text="Walkers List"
+                    android:id="@+id/walkers_button"
+                    android:layout_marginTop="5dp" />
+
             </LinearLayout>
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Walkers List"
-                android:id="@+id/walkers_button"
-                android:layout_below="@+id/details_layout4"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="5dp" />
-
-        </RelativeLayout>
+        </ScrollView>
 
         <Button
             android:id="@+id/startrace_button"

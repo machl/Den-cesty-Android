@@ -25,4 +25,7 @@
     <string name="title_activity_login">Přihlásit se</string>
     <string name="title_activity_race">Stav v závodě</string>
     <string name="unsent_messages">Neodeslaných zpráv:</string>
+    <string name="empty_list">No races are currently available.\nPlease pull down to refresh.</string>
+    <string name="start_colon">Start:</string>
+    <string name="end_colon">End:</string>
 </resources>

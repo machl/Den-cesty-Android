@@ -19,8 +19,8 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +29,7 @@ import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
-public class RacesListActivity extends ListActivity {
+public class RacesListActivity extends ListActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     protected static final String TAG = "RacesListActivity";
 
@@ -51,7 +51,7 @@ public class RacesListActivity extends ListActivity {
 
     // UI references.
     private SwipeRefreshLayout mSwipeContainer;
-    private DateFormat dateFormatter = DateFormat.getDateTimeInstance();
+    private SwipeRefreshLayout mEmptySwipeContainer;
 
     private Date lastTimeRefreshed = null;
 
@@ -61,18 +61,18 @@ public class RacesListActivity extends ListActivity {
         setContentView(R.layout.activity_races_list);
 
         mSwipeContainer = (SwipeRefreshLayout) findViewById(R.id.races_list_swipe_container);
-        mSwipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                attemptRefresh();
-            }
-        });
+        mSwipeContainer.setOnRefreshListener(this);
+        mEmptySwipeContainer = (SwipeRefreshLayout) findViewById(R.id.races_list_swipe_container_empty);
+        mEmptySwipeContainer.setOnRefreshListener(this);
 
         //ActionBar actionBar = getActionBar();
         //actionBar.setDisplayHomeAsUpEnabled(true);
 
         // assign the list adapter
         setListAdapter(new RacesListAdapter(this));
+
+        ListView lv = (ListView)findViewById(android.R.id.list);
+        lv.setEmptyView(mEmptySwipeContainer);
     }
 
     @Override
@@ -88,6 +88,11 @@ public class RacesListActivity extends ListActivity {
     }
 
     // TODO: logout button pressed
+
+    @Override
+    public void onRefresh() {
+        attemptRefresh();
+    }
 
     private void attemptRefresh() {
         if (mRefreshTask != null) {
@@ -168,6 +173,7 @@ public class RacesListActivity extends ListActivity {
 
     private void showProgress(final boolean show) {
         mSwipeContainer.setRefreshing(show);
+        mEmptySwipeContainer.setRefreshing(show);
     }
 
     private void updateRacesList() {
@@ -195,6 +201,7 @@ public class RacesListActivity extends ListActivity {
     private class RacesListAdapter extends BaseAdapter {
 
         private final Context context;
+        private SimpleDateFormat dateFormatter = new SimpleDateFormat("EEEE dd. MMMM yyyy H:mm");
 
         public RacesListAdapter(Context context) {
             this.context = context;
@@ -231,7 +238,7 @@ public class RacesListActivity extends ListActivity {
 
             nameCS.setText(item.nameCS);
             nameEN.setText(item.nameEN);
-            startTime.setText(dateFormatter.format(item.startTime)); // TODO: lepsi formatovani casu
+            startTime.setText(dateFormatter.format(item.startTime));
             finishTime.setText(dateFormatter.format(item.finishTime));
 
             return convertView;
