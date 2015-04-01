@@ -237,9 +237,15 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
             RaceItem item = getItem(position);
 
             nameCS.setText(item.nameCS);
-            nameEN.setText(item.nameEN);
             startTime.setText(dateFormatter.format(item.startTime));
             finishTime.setText(dateFormatter.format(item.finishTime));
+
+            if (item.nameEN.isEmpty()) {
+                nameEN.setVisibility(View.GONE);
+            } else {
+                nameEN.setVisibility(View.VISIBLE);
+                nameEN.setText(item.nameEN);
+            }
 
             return convertView;
         }
