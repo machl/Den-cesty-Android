@@ -128,7 +128,7 @@
                 <Button
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="Walkers List"
+                    android:text="@string/walkers_list_button"
                     android:id="@+id/walkers_button"
                     android:layout_marginTop="5dp" />
 

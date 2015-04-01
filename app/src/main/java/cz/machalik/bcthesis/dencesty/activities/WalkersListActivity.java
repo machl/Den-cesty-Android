@@ -204,21 +204,21 @@ public class WalkersListActivity extends ListActivity {
                 long deltaMinutes = deltaSeconds / 60;
 
                 if (deltaSeconds < 5) {
-                    timeLabel.setText("just now");
+                    timeLabel.setText(getString(R.string.time_delta_justnow));
                 } else if (deltaSeconds < 60) {
-                    timeLabel.setText(String.format("%d seconds ago", deltaSeconds));
+                    timeLabel.setText(String.format(getString(R.string.time_delta_seconds_ago), deltaSeconds));
                 } else if (deltaSeconds < 120) {
-                    timeLabel.setText("a minute ago");
+                    timeLabel.setText(getString(R.string.time_delta_minute_ago));
                 } else if (deltaMinutes < 60) {
-                    timeLabel.setText(String.format("%d minutes ago", deltaMinutes));
+                    timeLabel.setText(String.format(getString(R.string.time_delta_minutes_ago), deltaMinutes));
                 } else if (deltaMinutes < 120) {
-                    timeLabel.setText("an hour ago");
+                    timeLabel.setText(getString(R.string.time_delta_hour_ago));
                 } else {
                     int hours = (int) Math.floor(deltaMinutes / 60);
-                    timeLabel.setText(String.format("%d hours ago", hours));
+                    timeLabel.setText(String.format(getString(R.string.time_delta_hours_ago), hours));
                 }
             } else {
-                timeLabel.setText("never updated");
+                timeLabel.setText(getString(R.string.time_delta_never_updated));
             }
 
             // Set different background color for current user

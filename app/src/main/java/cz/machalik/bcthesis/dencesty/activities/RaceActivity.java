@@ -176,8 +176,8 @@ public class RaceActivity extends Activity {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (this.raceModel.isStarted()) {
                 new AlertDialog.Builder(this)
-                        .setTitle("Race in progress")
-                        .setMessage("Before returning to the race list, please, end the race!")
+                        .setTitle(getString(R.string.back_key_warning_title))
+                        .setMessage(getString(R.string.back_key_warning_message))
                         .setPositiveButton(android.R.string.ok, null)
                         .show();
             } else {

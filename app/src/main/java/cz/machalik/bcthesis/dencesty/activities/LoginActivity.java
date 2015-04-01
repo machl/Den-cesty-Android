@@ -203,8 +203,8 @@ public class LoginActivity extends Activity {
 
     private void onConnectionError() {
         new AlertDialog.Builder(this)
-                .setTitle("Connection error")
-                .setMessage("Check your network connection, please.")
+                .setTitle(getString(R.string.connection_error_title))
+                .setMessage(getString(R.string.connection_error_message))
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
     }

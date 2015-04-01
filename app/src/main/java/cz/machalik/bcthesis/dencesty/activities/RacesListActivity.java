@@ -125,7 +125,7 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
             showProgress(false);
 
             if (success) {
-                Log.i(TAG, "Successful RacesUpdate");
+                //Log.i(TAG, "Successful RacesUpdate");
                 lastTimeRefreshed = new Date();
                 updateRacesList();
             } else {
@@ -201,7 +201,7 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
     private class RacesListAdapter extends BaseAdapter {
 
         private final Context context;
-        private SimpleDateFormat dateFormatter = new SimpleDateFormat("EEEE dd. MMMM yyyy H:mm");
+        private SimpleDateFormat dateFormatter = new SimpleDateFormat(getString(R.string.races_list_item_dateformat));
 
         public RacesListAdapter(Context context) {
             this.context = context;
@@ -256,8 +256,8 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
             attemptLoadRace(selectedItem.id);
         } else {
             new AlertDialog.Builder(this)
-                    .setTitle("Too soon...")
-                    .setMessage("Information about the race will be available 10 minutes before the start.")
+                    .setTitle(getString(R.string.start_soon_alert_title))
+                    .setMessage(getString(R.string.start_soon_alert_message))
                     .setPositiveButton(android.R.string.ok, null)
                     //.setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
@@ -284,7 +284,7 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
 
         @Override
         protected void onPreExecute() {
-            dialog.setMessage("Downloading race data...");
+            dialog.setMessage(getString(R.string.downloading_race_info));
             dialog.show();
         }
 

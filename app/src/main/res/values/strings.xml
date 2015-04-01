@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">20. Den cesty</string>
+    <string name="app_name" translatable="false">Den cesty</string>
 
-    <!-- Strings related to login activity -->
-    <string name="login_headline" translatable="false">20. Den cesty</string>
+    <string name="login_headline" translatable="false">Den cesty</string>
     <string name="please_login">Please login: (same as on web)</string>
-    <string name="title_activity_login">Sign in</string>
+    <string name="title_activity_login" translatable="false">Den cesty</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in</string>
@@ -15,33 +14,52 @@
     <string name="error_incorrect_password">This password or email is incorrect</string>
     <string name="error_field_required">This field is required</string>
 
-    <!-- Strings related to firstscreen activity -->
-    <string name="title_activity_first_screen">Welcome to Den cesty</string>
+    <string name="title_activity_first_screen" translatable="false">Den cesty</string>
     <string name="den_cesty_logo">Race logo</string>
 
     <string name="gps_network_not_enabled">Location services are disabled. Please, go to settings and enable GPS location provider.</string>
     <string name="open_location_settings">Location settings</string>
 
-    <!-- Strings related to race activity -->
-    <string name="title_activity_race">Race progress</string>
+    <string name="title_activity_race" translatable="false">Den cesty</string>
     <string name="are_you_sure_end_race">Are you sure that you want end race?</string>
     <string name="start_race">Start race</string>
     <string name="end_race">End race</string>
     <string name="cancel">Cancel</string>
-    <string name="elapsed_distance">Elapsed distance:</string>
+    <string name="elapsed_distance">Elapsed distance along a route:</string>
     <string name="avg_speed">Average speed:</string>
     <string name="unsent_messages">Unsent messages:</string>
     <string name="num_of_location_updates">Num of location updates:</string>
     <string name="other_competitors">Other competitors:</string>
     <string name="distance_comma_speed">distance, speed</string>
 
-    <!-- Strings related to races list activity -->
-    <string name="title_activity_races_list">List of races</string>
+    <string name="title_activity_races_list" translatable="false">Den cesty</string>
 
-    <!-- Strings related to walkers list activity -->
-    <string name="title_activity_walkers_list">Other walkers</string>
+    <string name="title_activity_walkers_list" translatable="false">Den cesty</string>
     <string name="empty_list">No races are currently available.\nPlease pull down to refresh.</string>
     <string name="start_colon">Start:</string>
     <string name="end_colon">End:</string>
+    <string name="connection_error_title">Connection error</string>
+    <string name="connection_error_message">Check your network connection, please.</string>
+    <string name="back_key_warning_title">Race in progress</string>
+    <string name="back_key_warning_message">Before returning to the race list, please, end the race!</string>
+    <string name="races_list_item_dateformat">EEEE dd. MMMM yyyy H:mm</string>
+    <string name="start_soon_alert_title">Too soon…</string>
+    <string name="start_soon_alert_message">Information about the race will be available 10 minutes before the start.</string>
+    <string name="downloading_race_info">Downloading race data…</string>
+    <string name="time_delta_justnow">just now</string>
+    <string name="time_delta_seconds_ago">%d seconds ago</string>
+    <string name="time_delta_minute_ago">a minute ago</string>
+    <string name="time_delta_minutes_ago">%d minutes ago</string>
+    <string name="time_delta_hour_ago">an hour ago</string>
+    <string name="time_delta_hours_ago">%d hours ago</string>
+    <string name="time_delta_never_updated">never updated</string>
+    <string name="walkers_list_button">Walkers List</string>
+    <string name="race_state_ended">Ended</string>
+    <string name="auto_race_ended_title">Race ended</string>
+    <string name="auto_race_ended_message">The race is over.</string>
+    <string name="start_race_alert_soon_title">Too soon…</string>
+    <string name="start_race_alert_soon_message">Race start is scheduled to %s</string>
+    <string name="start_race_alert_finished_title">Maybe next time</string>
+    <string name="start_race_alert_finished_message">The race is over.</string>
 
 </resources>

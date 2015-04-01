@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
@@ -108,16 +109,16 @@ public class RaceModel {
                     String startTimeString = dateFormat.format(this.startTime);
 
                     new AlertDialog.Builder(context)
-                            .setTitle("Too soon...")
-                            .setMessage(String.format("Race start is scheduled to %s", startTimeString))
+                            .setTitle(context.getString(R.string.start_race_alert_soon_title))
+                            .setMessage(String.format(context.getString(R.string.start_race_alert_soon_message), startTimeString))
                             .setPositiveButton(android.R.string.ok, null)
                             .show();
 
                 } else if (now.after(this.finishTime)) {
 
                     new AlertDialog.Builder(context)
-                            .setTitle("Maybe next time")
-                            .setMessage("The race is over.")
+                            .setTitle(context.getString(R.string.start_race_alert_finished_title))
+                            .setMessage(context.getString(R.string.start_race_alert_finished_message))
                             .setPositiveButton(android.R.string.ok, null)
                             .show();
 
@@ -150,8 +151,8 @@ public class RaceModel {
             stopRace(context);
 
             new AlertDialog.Builder(context)
-                    .setTitle("Race ended")
-                    .setMessage("The race is over.")
+                    .setTitle(context.getString(R.string.auto_race_ended_title))
+                    .setMessage(context.getString(R.string.auto_race_ended_message))
                     .setPositiveButton(android.R.string.ok, null)
                     .show();
         }
