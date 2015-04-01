@@ -26,7 +26,7 @@
         <activity
             android:name=".activities.RacesListActivity"
             android:label="@string/title_activity_races_list"
-            android:parentActivityName=".activities.LoginActivity" >
+             > <!-- android:parentActivityName=".activities.LoginActivity" -->
         </activity>
         <activity
             android:name=".activities.RaceActivity"
