@@ -295,7 +295,7 @@ public class RacesListActivity extends ListActivity {
             }
 
             if (success) {
-                Log.i(TAG, "Successful LoadRace");
+                //Log.i(TAG, "Successful LoadRace");
                 onSuccessfulLoadRace();
             } else {
                 Log.i(TAG, "Failed LoadRace");
@@ -313,7 +313,7 @@ public class RacesListActivity extends ListActivity {
     }
 
     private void onSuccessfulLoadRace() {
-        Log.d(TAG, "Launching RaceActivity with ID "+preparedRaceModel.getRaceId());
+        //Log.d(TAG, "Launching RaceActivity with ID "+preparedRaceModel.getRaceId());
 
         Intent intent = new Intent(this, RaceActivity.class);
         startActivity(intent);

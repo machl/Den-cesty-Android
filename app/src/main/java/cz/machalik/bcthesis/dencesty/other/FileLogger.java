@@ -2,11 +2,7 @@ package cz.machalik.bcthesis.dencesty.other;
 
 import android.os.Environment;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Date;
 
 /**
  * Logging into a file on a sdcard.
@@ -29,6 +25,7 @@ public class FileLogger {
     private FileLogger() {}
 
     public static void log(String tag, String text) {
+        /*
 
         // Availability checks:
         if (!ready) {
@@ -90,6 +87,6 @@ public class FileLogger {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-        }
+        }*/
     }
 }

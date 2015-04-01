@@ -98,11 +98,16 @@ public class WalkersModel {
         }
 
         try {
+            Date presentWalkerUpdatedAt = null;
+            if (jsonData.has("updated_at")) {
+                presentWalkerUpdatedAt = WebAPI.DATE_FORMAT_DOWNLOAD.parse(jsonData.optString("updated_at"));
+            }
+
             presentWalker = new Walker(User.getWalkerFullName(),
                     jsonData.optInt("distance"),
                     jsonData.optDouble("speed"),
                     jsonData.optInt("raceState"),
-                    WebAPI.DATE_FORMAT_DOWNLOAD.parse(jsonData.optString("updated_at")));
+                    presentWalkerUpdatedAt);
 
             numWalkersAhead = jsonData.optInt("numWalkersAhead");
             numWalkersBehind = jsonData.optInt("numWalkersBehind");

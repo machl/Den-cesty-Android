@@ -19,12 +19,15 @@ public class DistanceModel {
 
     protected static final String TAG = "DistanceModel";
 
-    private Checkpoint[] checkpoints;
-    private Date startTime;
-
     private int distance = 0;
     private double avgSpeed = 0.0;
     private int lastCheckpoint = 0;
+    private Date startTime;
+    private Checkpoint[] checkpoints;
+
+    // off the route detection
+    private int lastDistanceToNextCheckpoint = 0;
+    private int offRouteUpdatesCounter = 0;
 
     public DistanceModel() { }
 
@@ -65,23 +68,27 @@ public class DistanceModel {
     }
 
     public void onLocationChanged(Location location) {
-        //mCurrentLocation = location;
+        if (!location.hasAccuracy() || location.getAccuracy() > 200 ) {
+            // inaccurate location updates filter
+            return;
+        }
+
         int newDistance = calculateDistance(location);
 
         if (newDistance > this.distance) {
             this.distance = newDistance;
             this.avgSpeed = calculateAvgSpeed(location);
-            // TODO: notify distance changed pro účely mapy
+            notifyDistanceChanged(location);
+
+            // on the route, reset off the route detection
+            onOnRouteLocationUpdate(location);
         } else {
-            // TODO: upozorneni na sejiti z trasy (po nekolika location updatech mimo)
+            // off the route
+            onOffRouteLocationUpdate(location);
         }
     }
 
     private int calculateDistance(Location location) {
-        if (!location.hasAccuracy() || location.getAccuracy() > 200 ) {
-            // inaccurate location updates filter
-            return 0;
-        }
 
         for (int i = lastCheckpoint; i < checkpoints.length - 1; i++) {
             Checkpoint last = checkpoints[i];
@@ -109,6 +116,10 @@ public class DistanceModel {
         return ((double)this.distance / secondsSinceStart) * 3.6;
     }
 
+    private void notifyDistanceChanged(Location location) {
+        // TODO: notifications for map
+    }
+
     public int getDistance() {
         return distance;
     }
@@ -128,6 +139,10 @@ public class DistanceModel {
         return results[0];
     }
 
+    public Checkpoint[] getCheckpoints() {
+        return checkpoints;
+    }
+
     public static class Checkpoint {
 
         public final int id;
@@ -141,5 +156,17 @@ public class DistanceModel {
             this.latitude = latitude;
             this.longitude = longitude;
         }
+    }
+
+    public int getOffRouteUpdatesCounter() {
+        return offRouteUpdatesCounter;
+    }
+
+    private void onOnRouteLocationUpdate(Location location) {
+        // TODO: off road detection
+    }
+
+    private void onOffRouteLocationUpdate(Location location) {
+        // TODO: off road detection
     }
 }

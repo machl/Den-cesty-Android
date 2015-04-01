@@ -1,5 +1,7 @@
 package cz.machalik.bcthesis.dencesty.model;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,11 +11,14 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
+import cz.machalik.bcthesis.dencesty.model.DistanceModel.Checkpoint;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
@@ -42,61 +47,114 @@ public class RaceModel {
         // Process race_info:
         final JSONObject raceInfo = response.optJSONObject("race");
         this.raceId = raceInfo.optInt("id");
+        this.startTime = null;
+        this.finishTime = null;
+        try {
+            this.startTime = WebAPI.DATE_FORMAT_DOWNLOAD.parse(raceInfo.optString("start_time"));
+            this.finishTime = WebAPI.DATE_FORMAT_DOWNLOAD.parse(raceInfo.optString("finish_time"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         // Process scoreboard:
-        final JSONObject scoreboard = response.optJSONObject("scoreboard");
-        if (scoreboard != null && scoreboard.length() > 0) {
-            this.isStarted = (1 == scoreboard.optInt("raceState"));
-        } else {
-            this.isStarted = false;
-        }
+        //final JSONObject scoreboard = response.optJSONObject("scoreboard");
+        //if (scoreboard != null && scoreboard.length() > 0) {
+        //    this.isStarted = (1 == scoreboard.optInt("raceState"));
+        //} else {
+        //    this.isStarted = false;
+        //}
 
         this.distanceModel.init(response);
 
         return true;
     }
 
-    public void startRace(Context context) {
-        if (!this.isStarted) {
-            // Create new start race event
-            Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
-            event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
-            EventUploaderService.addEvent(context, event);
+    public void startRace(Activity activity) {
+        Context context = activity;
 
-            // Register broadcast receiver on location updates
-            mLocationChangedReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    if (intent.getAction().equals(BackgroundLocationService.ACTION_LOCATION_CHANGED)) {
-                        onLocationChanged(context, BackgroundLocationService.getLastKnownLocation());
+        if (!this.isStarted && BackgroundLocationService.isLocationProviderEnabled(activity)) {
+
+            if (isRaceAbleToStart()) {
+
+                // Create new start race event
+                Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
+                event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
+                EventUploaderService.addEvent(context, event);
+                //EventUploaderService.performUpload(context);
+
+                // Register broadcast receiver on location updates
+                mLocationChangedReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (intent.getAction().equals(BackgroundLocationService.ACTION_LOCATION_CHANGED)) {
+                            onLocationChanged(context, BackgroundLocationService.getLastKnownLocation());
+                        }
                     }
+                };
+                LocalBroadcastManager.getInstance(context)
+                        .registerReceiver(mLocationChangedReceiver,
+                                new IntentFilter(BackgroundLocationService.ACTION_LOCATION_CHANGED));
+
+                // Start background location service
+                BackgroundLocationService.start(context);
+
+                this.isStarted = true;
+
+            } else {
+                Date now = new Date();
+                if (now.before(this.startTime)) {
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+                    String startTimeString = dateFormat.format(this.startTime);
+
+                    new AlertDialog.Builder(context)
+                            .setTitle("Too soon...")
+                            .setMessage(String.format("Race start is scheduled to %s", startTimeString))
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show();
+
+                } else if (now.after(this.finishTime)) {
+
+                    new AlertDialog.Builder(context)
+                            .setTitle("Maybe next time")
+                            .setMessage("The race is over.")
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show();
+
                 }
-            };
-            LocalBroadcastManager.getInstance(context)
-                    .registerReceiver(mLocationChangedReceiver,
-                            new IntentFilter(BackgroundLocationService.ACTION_LOCATION_CHANGED));
+            }
 
-            // Start background location service
-            BackgroundLocationService.start(context);
-
-            this.isStarted = true;
         }
     }
 
     public void stopRace(Context context) {
-        this.isStarted = false;
+        if (this.isStarted) {
+            this.isStarted = false;
 
-        // Stop background location service
-        boolean wasRunning = BackgroundLocationService.stop(context);
+            // Stop background location service
+            boolean wasRunning = BackgroundLocationService.stop(context);
 
-        // Create new stop race event
-        if (wasRunning) {
-            Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STOPRACE);
-            EventUploaderService.addEvent(context, event);
-            EventUploaderService.performUpload(context);
+            // Create new stop race event
+            //if (wasRunning) {
+                Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STOPRACE);
+                EventUploaderService.addEvent(context, event);
+                EventUploaderService.performUpload(context);
+            //}
+
+            LocalBroadcastManager.getInstance(context).unregisterReceiver(mLocationChangedReceiver);
         }
+    }
 
-        LocalBroadcastManager.getInstance(context).unregisterReceiver(mLocationChangedReceiver);
+    public void checkFinish(Context context) {
+        if (isStarted() && !isRaceAbleToStart()) {
+            stopRace(context);
+
+            new AlertDialog.Builder(context)
+                    .setTitle("Race ended")
+                    .setMessage("The race is over.")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        }
     }
 
     public boolean isStarted() {
@@ -117,15 +175,32 @@ public class RaceModel {
         return distanceModel != null ? distanceModel.getAvgSpeed() : 0;
     }
 
+    public boolean isRaceAbleToStart() {
+        Date now = new Date();
+        if (now.before(this.startTime)) {
+            return false;
+        }
+        if (now.after(this.finishTime)) {
+            return false;
+        }
+
+        return true;
+    }
+
     public int getLocationUpdatesCounter() {
         return locationUpdatesCounter;
     }
 
+    public Checkpoint[] getCheckpoints() {
+        return this.distanceModel.getCheckpoints();
+    }
 
     /****************************** Private: ******************************/
 
     private int raceId;
     private boolean isStarted = false;
+    private Date startTime = null;
+    private Date finishTime = null;
     private DistanceModel distanceModel = new DistanceModel();
 
     /**
@@ -140,6 +215,10 @@ public class RaceModel {
         distanceModel.onLocationChanged(location);
 
         fireLocationUpdateEvent(context, location);
+
+        // Stop if race is over.
+        checkFinish(context);
+
         notifySomeRaceInfoChanged(context);
     }
 
@@ -177,6 +256,7 @@ public class RaceModel {
         event.getExtras().put("distance", getRaceDistance());
         event.getExtras().put("avgSpeed", getRaceAvgSpeed());
         event.getExtras().put("lastCheckpoint", distanceModel.getLastCheckpoint());
+        event.getExtras().put("offRouteCounter", distanceModel.getOffRouteUpdatesCounter());
 
         EventUploaderService.addEvent(context, event);
         EventUploaderService.performUpload(context);

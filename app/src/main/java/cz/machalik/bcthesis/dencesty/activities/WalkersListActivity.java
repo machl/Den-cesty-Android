@@ -15,6 +15,7 @@ import android.widget.TextView;
 import java.util.Date;
 
 import cz.machalik.bcthesis.dencesty.R;
+import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel.Walker;
 
@@ -80,6 +81,11 @@ public class WalkersListActivity extends ListActivity {
         // showProgress(true);
         mRefreshTask = new WalkersUpdateAsyncTask(this);
         mRefreshTask.execute();
+
+        // TODO: vypustit location update s okamzitou polohou
+
+        // Do manually upload events
+        EventUploaderService.performUpload(this);
     }
 
     private class WalkersUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
@@ -100,7 +106,7 @@ public class WalkersListActivity extends ListActivity {
             showProgress(false);
 
             if (success) {
-                Log.i(TAG, "Successful WalkersUpdate");
+                //Log.i(TAG, "Successful WalkersUpdate");
                 lastTimeRefreshed = new Date();
                 updateWalkersList();
             } else {

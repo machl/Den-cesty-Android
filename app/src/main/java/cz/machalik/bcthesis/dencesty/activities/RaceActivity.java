@@ -162,6 +162,10 @@ public class RaceActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+
+        // Stop race if race is over.
+        this.raceModel.checkFinish(this);
+
         refreshRaceInfoValues();
         setUnsentCounter(EventUploaderService.getEventQueueSize());
         updateVisibilityOfButtons();
@@ -188,7 +192,6 @@ public class RaceActivity extends Activity {
     protected void refreshRaceInfoValues() {
         this.mDistanceTextView.setText(String.format("%d m", this.raceModel.getRaceDistance()));
         this.mAvgSpeedTextView.setText(String.format("%.2f km/h", this.raceModel.getRaceAvgSpeed()));
-
         this.mLocationUpdatesCounter.setText(""+this.raceModel.getLocationUpdatesCounter());
     }
 
@@ -211,8 +214,6 @@ public class RaceActivity extends Activity {
             mStartraceButton.setVisibility(View.VISIBLE);
             // mBackButton setEnabled true
         }
-
-        // TODO: check startTime a finishTime
     }
 
 }

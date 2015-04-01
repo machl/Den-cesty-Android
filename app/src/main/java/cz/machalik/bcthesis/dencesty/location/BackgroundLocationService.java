@@ -1,13 +1,18 @@
 package cz.machalik.bcthesis.dencesty.location;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -17,6 +22,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import cz.machalik.bcthesis.dencesty.R;
 
 
 /**
@@ -81,9 +88,53 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
         return context.stopService(intent);
     }
 
-    public static boolean isLocationProviderEnabled(Context context) {
-        LocationManager service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
-        return service.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    public static boolean isLocationProviderEnabled(final Activity activity) {
+
+        // Check that Google Play services is available
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
+        // If Google Play services is available
+        if (ConnectionResult.SUCCESS != resultCode) {
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(resultCode, activity, 0);
+            if (dialog != null) {
+                //This dialog will help the user update to the latest GooglePlayServices
+                dialog.show();
+            }
+
+            return false;
+        }
+
+        // Check GPS is enabled
+        LocationManager service = (LocationManager) activity.getSystemService(LOCATION_SERVICE);
+        if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            // Yes button clicked
+                            // Show location settings to user
+                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            activity.startActivity(intent);
+                            break;
+
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            // No button clicked
+                            // Do nothing
+                            break;
+                    }
+
+                }
+            };
+
+            AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
+            dialog.setMessage(activity.getString(R.string.gps_network_not_enabled))
+                    .setPositiveButton(activity.getString(R.string.open_location_settings), dialogClickListener)
+                    .setNegativeButton(activity.getString(R.string.cancel), dialogClickListener)
+                    .show();
+            return false;
+        }
+
+        return true;
     }
 
     public static Location getLastKnownLocation() {
