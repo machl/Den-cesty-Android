@@ -328,7 +328,7 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
     private void onSuccessfulLoadRace() {
         //Log.d(TAG, "Launching RaceActivity with ID "+preparedRaceModel.getRaceId());
 
-        Intent intent = new Intent(this, RaceActivity.class);
+        Intent intent = new Intent(this, RaceTabbedActivity.class);
         startActivity(intent);
     }
 }

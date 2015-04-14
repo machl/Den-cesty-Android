@@ -1,6 +1,5 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
-import android.app.ListActivity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,62 +15,99 @@ import java.util.Date;
 
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
+import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel;
-import cz.machalik.bcthesis.dencesty.model.WalkersModel.Walker;
+import cz.machalik.bcthesis.dencesty.other.SwipeRefreshListFragment;
 
-public class WalkersListActivity extends ListActivity {
+/**
+ * A fragment representing a list of Walkers.
+ */
+public class WalkersListFragment extends SwipeRefreshListFragment {
 
-    protected static final String TAG = "WalkersListActivity";
+    protected static final String TAG = "WalkersListFragment";
 
     private static final int TIMEINTERVAL_TO_SUPPRESS_REFRESHING = 5 * 60; // in seconds
+
+    private Date lastTimeRefreshed = null;
+    private RaceModel raceModel;
+    private WalkersModel walkersModel;
 
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
     private WalkersUpdateAsyncTask mRefreshTask = null;
 
-    // UI references.
-    private SwipeRefreshLayout mSwipeContainer;
+    private WalkersListAdapter walkersListAdapter = null;
 
-    private Date lastTimeRefreshed = null;
+    public static WalkersListFragment newInstance(RaceModel raceModel) {
+        WalkersListFragment fragment = new WalkersListFragment();
+        fragment.raceModel = raceModel;
+        return fragment;
+    }
 
-    private WalkersModel walkersModel;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_walkers_list);
-
-        int raceId = getIntent().getIntExtra(RaceActivity.EXTRA_RACE_ID, 0);
-        this.walkersModel = new WalkersModel(raceId);
-
-        mSwipeContainer = (SwipeRefreshLayout) findViewById(R.id.walkers_list_swipe_container);
-        mSwipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                attemptRefresh();
-            }
-        });
-
-        // assign the list adapter
-        //setListAdapter(new WalkersListAdapter(this));
+    /**
+     * Mandatory empty constructor for the fragment manager to instantiate the
+     * fragment (e.g. upon screen orientation changes).
+     */
+    public WalkersListFragment() {
     }
 
     @Override
-    protected void onResume() {
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        int raceId = this.raceModel.getRaceId();
+        this.walkersModel = new WalkersModel(raceId);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        /**
+         * Implement {@link android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener}. When users do the "swipe to
+         * refresh" gesture, SwipeRefreshLayout invokes
+         * {@link android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener#onRefresh onRefresh()}. In
+         * {@link android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener#onRefresh onRefresh()}, call a method that
+         * refreshes the content. Call the same method in response to the Refresh action from the
+         * action bar.
+         */
+        setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+
+                initiateRefresh();
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
         super.onResume();
 
         if (this.lastTimeRefreshed == null ||
                 ((new Date().getTime() - this.lastTimeRefreshed.getTime()) / 1000) > TIMEINTERVAL_TO_SUPPRESS_REFRESHING)
         {
-            showProgress(true);
-            attemptRefresh();
+            // We make sure that the SwipeRefreshLayout is displaying it's refreshing indicator
+            if (!isRefreshing()) {
+                setRefreshing(true);
+            }
+
+            // Start our refresh background task
+            initiateRefresh();
         } else {
-            updateWalkersList();
+            if (this.walkersListAdapter != null) {
+                this.walkersListAdapter.notifyDataSetChanged();
+            }
         }
     }
 
-    public void attemptRefresh() {
+    /**
+     * By abstracting the refresh process to a single method, the app allows both the
+     * SwipeGestureLayout onRefresh() method and the Refresh action item to refresh the content.
+     */
+    private void initiateRefresh() {
         if (mRefreshTask != null) {
             return;
         }
@@ -79,13 +115,31 @@ public class WalkersListActivity extends ListActivity {
         // Show a progress spinner, and kick off a background task to
         // perform the race info refresh attempt.
         // showProgress(true);
-        mRefreshTask = new WalkersUpdateAsyncTask(this);
+        mRefreshTask = new WalkersUpdateAsyncTask(getActivity());
         mRefreshTask.execute();
 
         // TODO: vypustit location update s okamzitou polohou
 
         // Do manually upload events
-        EventUploaderService.performUpload(this);
+        EventUploaderService.performUpload(getActivity());
+    }
+
+    /**
+     * When the AsyncTask finishes, it calls onRefreshComplete(), which updates the data in the
+     * ListAdapter and turns off the progress bar.
+     */
+    private void onRefreshComplete(Context context, boolean success) {
+        if (success) {
+            //Log.i(TAG, "Successful WalkersUpdate");
+            lastTimeRefreshed = new Date();
+
+            setListAdapter(new WalkersListAdapter(context));
+        } else {
+            Log.i(TAG, "Failed WalkersUpdate");
+        }
+
+        // Stop the refreshing indicator
+        setRefreshing(false);
     }
 
     private class WalkersUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
@@ -101,34 +155,18 @@ public class WalkersListActivity extends ListActivity {
         }
 
         @Override
-        protected void onPostExecute(Boolean success) {
+        protected void onPostExecute(Boolean result) {
             mRefreshTask = null;
-            showProgress(false);
 
-            if (success) {
-                //Log.i(TAG, "Successful WalkersUpdate");
-                lastTimeRefreshed = new Date();
-                updateWalkersList();
-            } else {
-                Log.i(TAG, "Failed WalkersUpdate");
-            }
+            // Tell the Fragment that the refresh has completed
+            onRefreshComplete(mContext, result);
         }
 
         @Override
         protected void onCancelled() {
             mRefreshTask = null;
-            showProgress(false);
+            setRefreshing(false);
         }
-    }
-
-    private void showProgress(final boolean show) {
-        mSwipeContainer.setRefreshing(show);
-    }
-
-    protected void updateWalkersList() {
-        //final WalkersListAdapter adapter = ((WalkersListAdapter)getListAdapter());
-        //adapter.notifyDataSetChanged();
-        setListAdapter(new WalkersListAdapter(this));
     }
 
     private class WalkersListAdapter extends BaseAdapter {
@@ -139,15 +177,15 @@ public class WalkersListActivity extends ListActivity {
             this.context = context;
         }
 
-        public Walker[] getWalkersAhead() {
+        public WalkersModel.Walker[] getWalkersAhead() {
             return walkersModel.getWalkersAhead();
         }
 
-        public Walker[] getWalkersBehind() {
+        public WalkersModel.Walker[] getWalkersBehind() {
             return walkersModel.getWalkersBehind();
         }
 
-        public Walker getMe() {
+        public WalkersModel.Walker getMe() {
             return walkersModel.getPresentWalker();
         }
 
@@ -157,7 +195,7 @@ public class WalkersListActivity extends ListActivity {
         }
 
         @Override
-        public Walker getItem(int position) {
+        public WalkersModel.Walker getItem(int position) {
             if (position < getWalkersAhead().length) { // Ahead
                 return getWalkersAhead()[position];
             } else if (position > getWalkersAhead().length) { // Behind
@@ -185,7 +223,7 @@ public class WalkersListActivity extends ListActivity {
             TextView infoLabel = (TextView) convertView.findViewById(R.id.infoLabel);
             TextView timeLabel = (TextView) convertView.findViewById(R.id.timeLabel);
 
-            Walker walker = getItem(position);
+            WalkersModel.Walker walker = getItem(position);
 
             nameLabel.setText(walker.name);
             progressLabel.setText(String.format("%d m, %.2f km/h", walker.distance, walker.avgSpeed));

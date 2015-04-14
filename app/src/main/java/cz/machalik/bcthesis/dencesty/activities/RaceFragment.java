@@ -1,7 +1,7 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,8 +9,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -19,15 +20,13 @@ import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 /**
- * Race activity.
- *
- * Lukáš Machalík
+ * A simple {@link Fragment} subclass.
+ * Use the {@link RaceFragment#newInstance} factory method to
+ * create an instance of this fragment.
  */
-public class RaceActivity extends Activity {
+public class RaceFragment extends Fragment {
 
-    protected static final String TAG = "RaceActivity";
-
-    public static final String EXTRA_RACE_ID = "cz.machalik.bcthesis.dencesty.extra.EXTRA_RACE_ID";
+    protected static final String TAG = "RaceFragment";
 
     private RaceModel raceModel;
 
@@ -37,26 +36,40 @@ public class RaceActivity extends Activity {
     // UI references.
     private Button mStartraceButton;
     private Button mEndraceButton;
-    private Button mWalkersButton;
     private TextView mDistanceTextView;
     private TextView mAvgSpeedTextView;
     private TextView mUnsentCounter;
     private TextView mLocationUpdatesCounter;
 
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param raceModel Current RaceModel.
+     * @return A new instance of fragment RaceFragment.
+     */
+    public static RaceFragment newInstance(RaceModel raceModel) {
+        RaceFragment fragment = new RaceFragment();
+        fragment.raceModel = raceModel;
+        return fragment;
+    }
+
+    public RaceFragment() {
+        // Required empty public constructor
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_race);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_race, container, false);
 
-        mStartraceButton = (Button) findViewById(R.id.startrace_button);
-        mEndraceButton = (Button) findViewById(R.id.endrace_button);
-        mWalkersButton = (Button) findViewById(R.id.walkers_button);
-        mDistanceTextView = (TextView) findViewById(R.id.distance_textview);
-        mAvgSpeedTextView = (TextView) findViewById(R.id.avgspeed_textview);
-        mUnsentCounter = (TextView) findViewById(R.id.unsent_textview);
-        mLocationUpdatesCounter = (TextView) findViewById(R.id.loccounter_textview);
-
-        this.raceModel = RacesListActivity.preparedRaceModel;
+        mStartraceButton = (Button) view.findViewById(R.id.startrace_button);
+        mEndraceButton = (Button) view.findViewById(R.id.endrace_button);
+        mDistanceTextView = (TextView) view.findViewById(R.id.distance_textview);
+        mAvgSpeedTextView = (TextView) view.findViewById(R.id.avgspeed_textview);
+        mUnsentCounter = (TextView) view.findViewById(R.id.unsent_textview);
+        mLocationUpdatesCounter = (TextView) view.findViewById(R.id.loccounter_textview);
 
         mStartraceButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,16 +85,31 @@ public class RaceActivity extends Activity {
             }
         });
 
-        mWalkersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: temporary:
-                Intent intent = new Intent(getBaseContext(), WalkersListActivity.class);
-                intent.putExtra(RaceActivity.EXTRA_RACE_ID, raceModel.getRaceId());
-                startActivity(intent);
-            }
-        });
+        return view;
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        registerBroadcastReceivers();
+
+        // Stop race if race is over.
+        this.raceModel.checkFinish(getActivity());
+
+        refreshRaceInfoValues();
+        setUnsentCounter(EventUploaderService.getEventQueueSize());
+        updateVisibilityOfButtons();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        unregisterBroadcastReceivers();
+    }
+
+    private void registerBroadcastReceivers() {
         // Register broadcast receiver on unsent events counter updates
         mUnsentCounterReceiver = new BroadcastReceiver() {
             @Override
@@ -92,7 +120,7 @@ public class RaceActivity extends Activity {
                 }
             }
         };
-        LocalBroadcastManager.getInstance(this)
+        LocalBroadcastManager.getInstance(getActivity())
                 .registerReceiver(mUnsentCounterReceiver,
                         new IntentFilter(EventUploaderService.ACTION_EVENT_QUEUE_SIZE_CHANGED));
 
@@ -105,15 +133,20 @@ public class RaceActivity extends Activity {
                 }
             }
         };
-        LocalBroadcastManager.getInstance(this)
+        LocalBroadcastManager.getInstance(getActivity())
                 .registerReceiver(mRaceInfoChangedReceiver,
                         new IntentFilter(RaceModel.ACTION_RACE_INFO_CHANGED));
-
-        // TODO: if raceMobdel.isStarted() then start location updates (maybe directly in raceModel?)
     }
 
+    private void unregisterBroadcastReceivers() {
+        // unregister broadcast receivers
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mUnsentCounterReceiver);
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRaceInfoChangedReceiver);
+    }
+
+
     private void startButtonPressed() {
-        this.raceModel.startRace(this);
+        this.raceModel.startRace(getActivity());
         updateVisibilityOfButtons();
     }
 
@@ -134,7 +167,7 @@ public class RaceActivity extends Activity {
             }
         };
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage(getString(R.string.are_you_sure_end_race))
                 .setPositiveButton(getString(R.string.end_race), dialogClickListener)
                 .setNegativeButton(getString(R.string.cancel), dialogClickListener)
@@ -142,60 +175,17 @@ public class RaceActivity extends Activity {
     }
 
     private void endRace() {
-        this.raceModel.stopRace(this);
+        this.raceModel.stopRace(getActivity());
         updateVisibilityOfButtons();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        this.raceModel.stopRace(this);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mUnsentCounterReceiver); // TODO: if not null?
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRaceInfoChangedReceiver);
-        super.onDestroy();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Stop race if race is over.
-        this.raceModel.checkFinish(this);
-
-        refreshRaceInfoValues();
-        setUnsentCounter(EventUploaderService.getEventQueueSize());
-        updateVisibilityOfButtons();
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (this.raceModel.isStarted()) {
-                new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.back_key_warning_title))
-                        .setMessage(getString(R.string.back_key_warning_message))
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show();
-            } else {
-                // Dismiss Activity
-                finish();
-            }
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    protected void refreshRaceInfoValues() {
+    private void refreshRaceInfoValues() {
         this.mDistanceTextView.setText(String.format("%d m", this.raceModel.getRaceDistance()));
         this.mAvgSpeedTextView.setText(String.format("%.2f km/h", this.raceModel.getRaceAvgSpeed()));
         this.mLocationUpdatesCounter.setText(""+this.raceModel.getLocationUpdatesCounter());
     }
 
-    protected void setUnsentCounter(int numOfUnsentMessages) {
+    private void setUnsentCounter(int numOfUnsentMessages) {
         mUnsentCounter.setText(""+numOfUnsentMessages);
         if (numOfUnsentMessages > 0)
             mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_highlighted));

@@ -62,4 +62,11 @@
     <string name="start_race_alert_finished_title">Maybe next time</string>
     <string name="start_race_alert_finished_message">The race is over.</string>
 
+    <string name="title_section1">Race</string>
+    <string name="title_section2">Standings</string>
+    <string name="title_section3">Map</string>
+
+    <string name="action_settings">Settings</string>
+
+
 </resources>
