@@ -94,6 +94,18 @@ public class RaceFragment extends Fragment {
 
         registerBroadcastReceivers();
 
+        onDidAppear();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            onDidAppear();
+        }
+    }
+
+    private void onDidAppear() {
         // Stop race if race is over.
         this.raceModel.checkFinish(getActivity());
 

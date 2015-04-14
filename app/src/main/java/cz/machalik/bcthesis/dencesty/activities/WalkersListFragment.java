@@ -85,6 +85,19 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
     @Override
     public void onResume() {
         super.onResume();
+        onDidAppear();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            onDidAppear();
+        }
+    }
+
+    private void onDidAppear() {
+        //Log.e(TAG, "onDidAppear");
 
         if (this.lastTimeRefreshed == null ||
                 ((new Date().getTime() - this.lastTimeRefreshed.getTime()) / 1000) > TIMEINTERVAL_TO_SUPPRESS_REFRESHING)
@@ -131,9 +144,10 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
     private void onRefreshComplete(Context context, boolean success) {
         if (success) {
             //Log.i(TAG, "Successful WalkersUpdate");
-            lastTimeRefreshed = new Date();
+            this.lastTimeRefreshed = new Date();
 
-            setListAdapter(new WalkersListAdapter(context));
+            this.walkersListAdapter = new WalkersListAdapter(context);
+            setListAdapter(this.walkersListAdapter);
         } else {
             Log.i(TAG, "Failed WalkersUpdate");
         }
