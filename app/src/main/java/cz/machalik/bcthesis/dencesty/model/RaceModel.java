@@ -33,6 +33,7 @@ public class RaceModel {
 
     public static final String ACTION_RACE_INFO_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_RACE_INFO_CHANGED";
 
+    public static final int TIMEINTERVAL_BEFORE_RACE_START_TO_ALLOW_START_LOCATION = 10 * 60;
 
     /****************************** Public API: ******************************/
 
@@ -100,6 +101,14 @@ public class RaceModel {
                 BackgroundLocationService.start(context);
 
                 this.isStarted = true;
+
+                if (!isTimeInRace()) {
+                    new AlertDialog.Builder(context)
+                            .setTitle(context.getString(R.string.start_race_alert_before_title))
+                            .setMessage(context.getString(R.string.start_race_alert_before_message))
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show();
+                }
 
             } else {
                 Date now = new Date();
@@ -178,6 +187,19 @@ public class RaceModel {
 
     public boolean isRaceAbleToStart() {
         Date now = new Date();
+        long deltaSeconds = (now.getTime() - this.startTime.getTime()) / 1000;
+        if (deltaSeconds < -TIMEINTERVAL_BEFORE_RACE_START_TO_ALLOW_START_LOCATION) {
+            return false;
+        }
+        if (now.after(this.finishTime)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isTimeInRace() {
+        Date now = new Date();
         if (now.before(this.startTime)) {
             return false;
         }
@@ -213,7 +235,9 @@ public class RaceModel {
 
 
     private void onLocationChanged(Context context, Location location) {
-        distanceModel.onLocationChanged(location);
+        if (isTimeInRace()) {
+            distanceModel.onLocationChanged(location);
+        }
 
         fireLocationUpdateEvent(context, location);
 

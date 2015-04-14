@@ -48,4 +48,9 @@
     <string name="start_race_alert_soon_message">Start závodu je naplánován na %s</string>
     <string name="start_race_alert_finished_title">Možná příště</string>
     <string name="start_race_alert_finished_message">Závod už skončil.</string>
+    <string name="title_section1">Závod</string>
+    <string name="title_section2">Pořadí</string>
+    <string name="title_section3">Mapa</string>
+    <string name="start_race_alert_before_title">Info</string>
+    <string name="start_race_alert_before_message">Vzdálenost po trase bude počítána až po oficiálním startu závodu.</string>
 </resources>
