@@ -88,7 +88,6 @@ public class RaceMapFragment extends MapFragment {
                 @Override
                 public void onMapLoaded() {
                     getMap().setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-                    getMap().setMyLocationEnabled(true);
                     getMap().getUiSettings().setMapToolbarEnabled(false);
 
                     drawCheckpoints();
