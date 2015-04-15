@@ -53,4 +53,5 @@
     <string name="title_section3">Mapa</string>
     <string name="start_race_alert_before_title">Info</string>
     <string name="start_race_alert_before_message">Vzdálenost po trase bude počítána až po oficiálním startu závodu.</string>
+    <string name="action_logout">Odhlásit</string>
 </resources>

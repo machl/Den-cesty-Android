@@ -1,5 +1,6 @@
 package cz.machalik.bcthesis.dencesty.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
@@ -27,6 +28,8 @@ import cz.machalik.bcthesis.dencesty.model.RaceModel;
 public class RaceFragment extends Fragment {
 
     protected static final String TAG = "RaceFragment";
+
+    private OnRaceFragmentInteractionListener mListener;
 
     private RaceModel raceModel;
 
@@ -56,6 +59,23 @@ public class RaceFragment extends Fragment {
 
     public RaceFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            this.mListener = (OnRaceFragmentInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnRaceFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        this.mListener = null;
     }
 
     @Override
@@ -206,6 +226,10 @@ public class RaceFragment extends Fragment {
     }
 
     private void updateVisibilityOfButtons() {
+        if (this.mListener != null) {
+            this.mListener.onRaceFragmentUpdateVisibilityOfButtons();
+        }
+
         if (this.raceModel.isStarted()) {
             // TODO: animation?
             mStartraceButton.setVisibility(View.GONE);
@@ -216,6 +240,20 @@ public class RaceFragment extends Fragment {
             mStartraceButton.setVisibility(View.VISIBLE);
             // mBackButton setEnabled true
         }
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnRaceFragmentInteractionListener {
+        public void onRaceFragmentUpdateVisibilityOfButtons();
     }
 
 }
