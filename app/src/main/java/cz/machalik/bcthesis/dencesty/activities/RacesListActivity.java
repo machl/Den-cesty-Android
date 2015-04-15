@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 import cz.machalik.bcthesis.dencesty.R;
+import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.User;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
@@ -88,6 +89,9 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
             showProgress(true);
             attemptRefresh();
         }
+
+        // Check for Google Play services availability
+        BackgroundLocationService.isLocationProviderEnabled(this);
     }
 
     @Override

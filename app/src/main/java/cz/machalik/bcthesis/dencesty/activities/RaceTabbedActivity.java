@@ -152,6 +152,8 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
                     return RaceFragment.newInstance(raceModel);
                 case 1:
                     return WalkersListFragment.newInstance(raceModel);
+                case 2:
+                    return RaceMapFragment.newInstance(raceModel, null); // TODO: null
                 default:
                     return null;
             }
@@ -160,7 +162,7 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 2;
+            return 3;
         }
 
         @Override

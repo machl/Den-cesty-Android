@@ -248,6 +248,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
         // onConnectionFailed.
         //Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
         // if (result.hasResolution()) {}
+        // TODO: pokusit se o restart a vyhodit event (jako u iOS)
     }
 
     /**
