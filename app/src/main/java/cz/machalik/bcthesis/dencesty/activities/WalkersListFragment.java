@@ -91,7 +91,7 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
+        if (isVisibleToUser && isResumed()) {
             onDidAppear();
         }
     }
