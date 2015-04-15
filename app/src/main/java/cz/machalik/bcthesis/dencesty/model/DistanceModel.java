@@ -1,6 +1,9 @@
 package cz.machalik.bcthesis.dencesty.model;
 
+import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,11 +22,15 @@ public class DistanceModel {
 
     protected static final String TAG = "DistanceModel";
 
+    public static final String ACTION_DISTANCE_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_DISTANCE_CHANGED";
+
     private int distance = 0;
     private double avgSpeed = 0.0;
     private int lastCheckpoint = 0;
     private Date startTime;
     private Checkpoint[] checkpoints;
+
+    private static Location lastKnownLocation = null;
 
     // off the route detection
     private int lastDistanceToNextCheckpoint = 0;
@@ -67,7 +74,7 @@ public class DistanceModel {
         });
     }
 
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(Context context, Location location) {
         if (!location.hasAccuracy() || location.getAccuracy() > 200 ) {
             // inaccurate location updates filter
             return;
@@ -78,7 +85,7 @@ public class DistanceModel {
         if (newDistance > this.distance) {
             this.distance = newDistance;
             this.avgSpeed = calculateAvgSpeed(location);
-            notifyDistanceChanged(location);
+            notifyDistanceChanged(context, location);
 
             // on the route, reset off the route detection
             onOnRouteLocationUpdate(location);
@@ -116,8 +123,11 @@ public class DistanceModel {
         return ((double)this.distance / secondsSinceStart) * 3.6;
     }
 
-    private void notifyDistanceChanged(Location location) {
-        // TODO: notifications for map
+    private void notifyDistanceChanged(Context context, Location location) {
+        lastKnownLocation = location;
+
+        Intent intent = new Intent(ACTION_DISTANCE_CHANGED);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     public int getDistance() {
@@ -143,19 +153,8 @@ public class DistanceModel {
         return checkpoints;
     }
 
-    public static class Checkpoint {
-
-        public final int id;
-        public final int meters;
-        public final double latitude;
-        public final double longitude;
-
-        public Checkpoint(int id, int meters, double latitude, double longitude) {
-            this.id = id;
-            this.meters = meters;
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
+    public static Location getLastKnownLocation() {
+        return lastKnownLocation;
     }
 
     public int getOffRouteUpdatesCounter() {

@@ -19,7 +19,6 @@ import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
-import cz.machalik.bcthesis.dencesty.model.DistanceModel.Checkpoint;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
@@ -236,7 +235,7 @@ public class RaceModel {
 
     private void onLocationChanged(Context context, Location location) {
         if (isTimeInRace()) {
-            distanceModel.onLocationChanged(location);
+            distanceModel.onLocationChanged(context, location);
         }
 
         fireLocationUpdateEvent(context, location);

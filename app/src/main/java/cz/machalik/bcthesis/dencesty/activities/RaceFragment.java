@@ -212,7 +212,7 @@ public class RaceFragment extends Fragment {
     }
 
     private void refreshRaceInfoValues() {
-        this.mDistanceTextView.setText(String.format("%d m", this.raceModel.getRaceDistance()));
+        this.mDistanceTextView.setText(String.format("%,d m", this.raceModel.getRaceDistance()));
         this.mAvgSpeedTextView.setText(String.format("%.2f km/h", this.raceModel.getRaceAvgSpeed()));
         this.mLocationUpdatesCounter.setText(""+this.raceModel.getLocationUpdatesCounter());
     }

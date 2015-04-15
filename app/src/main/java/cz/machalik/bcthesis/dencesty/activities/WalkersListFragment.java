@@ -39,9 +39,10 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
 
     private WalkersListAdapter walkersListAdapter = null;
 
-    public static WalkersListFragment newInstance(RaceModel raceModel) {
+    public static WalkersListFragment newInstance(RaceModel raceModel, WalkersModel walkersModel) {
         WalkersListFragment fragment = new WalkersListFragment();
         fragment.raceModel = raceModel;
+        fragment.walkersModel = walkersModel;
         return fragment;
     }
 
@@ -50,14 +51,6 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
      * fragment (e.g. upon screen orientation changes).
      */
     public WalkersListFragment() {
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        int raceId = this.raceModel.getRaceId();
-        this.walkersModel = new WalkersModel(raceId);
     }
 
     @Override
@@ -240,7 +233,7 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
             WalkersModel.Walker walker = getItem(position);
 
             nameLabel.setText(walker.name);
-            progressLabel.setText(String.format("%d m, %.2f km/h", walker.distance, walker.avgSpeed));
+            progressLabel.setText(String.format("%,d m, %.2f km/h", walker.distance, walker.avgSpeed));
 
             // Show "Ended" if walker ended race already
             if (walker.raceState == WalkersModel.RaceState.ENDED) {

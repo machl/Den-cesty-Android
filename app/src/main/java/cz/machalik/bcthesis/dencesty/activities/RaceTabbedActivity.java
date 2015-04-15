@@ -10,18 +10,18 @@ import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import java.util.Locale;
 
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
+import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 
 public class RaceTabbedActivity extends Activity implements ActionBar.TabListener,
         RaceFragment.OnRaceFragmentInteractionListener {
 
     private RaceModel raceModel;
+    private WalkersModel walkersModel;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -45,6 +45,10 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
 
         // Obtain prepared race model from previous activity
         this.raceModel = RacesListActivity.preparedRaceModel;
+
+        // Init shared WalkersModel
+        int raceId = this.raceModel.getRaceId();
+        this.walkersModel = new WalkersModel(raceId);
 
         setUpViewPager();
     }
@@ -151,9 +155,9 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
                 case 0:
                     return RaceFragment.newInstance(raceModel);
                 case 1:
-                    return WalkersListFragment.newInstance(raceModel);
+                    return WalkersListFragment.newInstance(raceModel, walkersModel);
                 case 2:
-                    return RaceMapFragment.newInstance(raceModel, null); // TODO: null
+                    return RaceMapFragment.newInstance(raceModel, walkersModel);
                 default:
                     return null;
             }

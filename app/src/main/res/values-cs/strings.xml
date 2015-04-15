@@ -54,4 +54,10 @@
     <string name="start_race_alert_before_title">Info</string>
     <string name="start_race_alert_before_message">Vzdálenost po trase bude počítána až po oficiálním startu závodu.</string>
     <string name="action_logout">Odhlásit</string>
+    <string name="map_marker_finish">Cíl</string>
+    <string name="map_marker_start">Start</string>
+    <string name="map_marker_snippet_distance">poslední zaznamenaná poloha (%s)</string>
+    <string name="map_marker_snippet_presentwalker">můj pokrok (%s)</string>
+    <string name="map_marker_snippet_walker_ahead">%,d m přede mnou</string>
+    <string name="map_marker_snippet_walker_behind">%,d m za mnou</string>
 </resources>

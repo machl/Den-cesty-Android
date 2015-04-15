@@ -1,6 +1,8 @@
 package cz.machalik.bcthesis.dencesty.model;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -21,6 +23,8 @@ public class WalkersModel {
 
     /****************************** Public constants: ******************************/
 
+    public static final String ACTION_WALKERS_DID_REFRESHED = "cz.machalik.bcthesis.dencesty.action.ACTION_WALKERS_DID_REFRESHED";
+
 
     /****************************** Public API: ******************************/
 
@@ -29,6 +33,7 @@ public class WalkersModel {
 
         if (jsonResponse != null) {
             initializeWalkers(jsonResponse);
+            notifyWalkersDidRefreshed(context);
             return true;
         }
 
@@ -82,6 +87,8 @@ public class WalkersModel {
                                         0,
                                         0,
                                         RaceState.NOTSTARTED,
+                                        0,
+                                        0,
                                         null);
         this.walkersAhead = new Walker[0];
         this.walkersBehind = new Walker[0];
@@ -107,6 +114,8 @@ public class WalkersModel {
                     jsonData.optInt("distance"),
                     jsonData.optDouble("speed"),
                     jsonData.optInt("raceState"),
+                    jsonData.optDouble("latitude", 0),
+                    jsonData.optDouble("longitude", 0),
                     presentWalkerUpdatedAt);
 
             numWalkersAhead = jsonData.optInt("numWalkersAhead");
@@ -121,6 +130,8 @@ public class WalkersModel {
                                              o.optInt("distance"),
                                              o.optDouble("speed"),
                                              o.optInt("raceState"),
+                                             o.optDouble("latitude", 0),
+                                             o.optDouble("longitude", 0),
                                              WebAPI.DATE_FORMAT_DOWNLOAD.parse(o.optString("updated_at")));
             }
 
@@ -132,6 +143,8 @@ public class WalkersModel {
                                               o.optInt("distance"),
                                               o.optDouble("speed"),
                                               o.optInt("raceState"),
+                                              o.optDouble("latitude", 0),
+                                              o.optDouble("longitude", 0),
                                               WebAPI.DATE_FORMAT_DOWNLOAD.parse(o.optString("updated_at")));
             }
         } catch (ParseException e) {
@@ -139,18 +152,28 @@ public class WalkersModel {
         }
     }
 
+    private void notifyWalkersDidRefreshed(Context context) {
+        Intent intent = new Intent(ACTION_WALKERS_DID_REFRESHED);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
+
     public static class Walker {
         public final String name;
         public final int distance;
         public final double avgSpeed;
         public final int raceState;
+        public final double latitude;
+        public final double longitude;
         public final Date updatedAt;
 
-        public Walker(String name, int distance, double avgSpeed, int raceState, Date updatedAt) {
+        public Walker(String name, int distance, double avgSpeed, int raceState,
+                      double latitude, double longitude, Date updatedAt) {
             this.name = name;
             this.distance = distance;
             this.avgSpeed = avgSpeed;
             this.raceState = raceState;
+            this.latitude = latitude;
+            this.longitude = longitude;
             this.updatedAt = updatedAt;
         }
     }
