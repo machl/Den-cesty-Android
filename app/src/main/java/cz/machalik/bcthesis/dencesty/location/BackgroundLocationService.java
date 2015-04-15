@@ -230,7 +230,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
 
     @Override
     public void onConnected(Bundle bundle) {
-        //Log.i(TAG, "Connected to GoogleApiClient");
+        Log.e(TAG, "Connected to GoogleApiClient");
         startLocationUpdates();
     }
 
@@ -238,7 +238,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     public void onConnectionSuspended(int i) {
         // The connection to Google Play services was lost for some reason. We call connect() to
         // attempt to re-establish the connection.
-        //Log.i(TAG, "Connection suspended");
+        Log.e(TAG, "Connection suspended");
         mGoogleApiClient.connect();
     }
 
@@ -246,7 +246,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     public void onConnectionFailed(ConnectionResult result) {
         // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
         // onConnectionFailed.
-        //Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        Log.e(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
         // if (result.hasResolution()) {}
         // TODO: pokusit se o restart a vyhodit event (jako u iOS)
     }

@@ -81,7 +81,7 @@ public class RaceModel {
                 Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
                 event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
                 EventUploaderService.addEvent(context, event);
-                //EventUploaderService.performUpload(context);
+                EventUploaderService.performUpload(context);
 
                 // Register broadcast receiver on location updates
                 mLocationChangedReceiver = new BroadcastReceiver() {

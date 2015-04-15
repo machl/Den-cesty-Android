@@ -89,6 +89,7 @@ public class RaceMapFragment extends MapFragment {
                 public void onMapLoaded() {
                     getMap().setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                     getMap().setMyLocationEnabled(true);
+                    getMap().getUiSettings().setMapToolbarEnabled(false);
 
                     drawCheckpoints();
                     showWalkersOnMap();
@@ -226,7 +227,7 @@ public class RaceMapFragment extends MapFragment {
             this.walkersMapMarkers.add(marker);
         }
 
-        if (this.lastLocationUpdateMarker == null && presentWalker.latitude != 0 || presentWalker.longitude != 0) {
+        if (this.lastLocationUpdateMarker == null && presentWalker.latitude != 0 && presentWalker.longitude != 0) {
             String markerTitle = String.format(getActivity().getString(R.string.map_marker_title_presentwalker), presentWalker.distance);
             String markerSnippet = String.format(getActivity().getString(R.string.map_marker_snippet_presentwalker),
                     timeFormatter.format(presentWalker.updatedAt));
