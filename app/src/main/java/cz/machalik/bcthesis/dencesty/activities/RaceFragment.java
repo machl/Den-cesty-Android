@@ -127,7 +127,7 @@ public class RaceFragment extends Fragment {
 
     private void onDidAppear() {
         // Stop race if race is over.
-        this.raceModel.checkFinish(getActivity());
+        this.raceModel.checkFinishFromActivity(getActivity());
 
         refreshRaceInfoValues();
         setUnsentCounter(EventUploaderService.getEventQueueSize());

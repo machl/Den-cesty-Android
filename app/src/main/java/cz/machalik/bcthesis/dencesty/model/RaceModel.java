@@ -71,11 +71,11 @@ public class RaceModel {
     }
 
     public void startRace(Activity activity) {
-        Context context = activity;
 
         if (!this.isStarted && BackgroundLocationService.isLocationProviderEnabled(activity)) {
 
             if (isRaceAbleToStart()) {
+                Context context = activity;
 
                 // Create new start race event
                 Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
@@ -102,9 +102,9 @@ public class RaceModel {
                 this.isStarted = true;
 
                 if (!isTimeInRace()) {
-                    new AlertDialog.Builder(context)
-                            .setTitle(context.getString(R.string.start_race_alert_before_title))
-                            .setMessage(context.getString(R.string.start_race_alert_before_message))
+                    new AlertDialog.Builder(activity)
+                            .setTitle(activity.getString(R.string.start_race_alert_before_title))
+                            .setMessage(activity.getString(R.string.start_race_alert_before_message))
                             .setPositiveButton(android.R.string.ok, null)
                             .show();
                 }
@@ -116,17 +116,17 @@ public class RaceModel {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
                     String startTimeString = dateFormat.format(this.startTime);
 
-                    new AlertDialog.Builder(context)
-                            .setTitle(context.getString(R.string.start_race_alert_soon_title))
-                            .setMessage(String.format(context.getString(R.string.start_race_alert_soon_message), startTimeString))
+                    new AlertDialog.Builder(activity)
+                            .setTitle(activity.getString(R.string.start_race_alert_soon_title))
+                            .setMessage(String.format(activity.getString(R.string.start_race_alert_soon_message), startTimeString))
                             .setPositiveButton(android.R.string.ok, null)
                             .show();
 
                 } else if (now.after(this.finishTime)) {
 
-                    new AlertDialog.Builder(context)
-                            .setTitle(context.getString(R.string.start_race_alert_finished_title))
-                            .setMessage(context.getString(R.string.start_race_alert_finished_message))
+                    new AlertDialog.Builder(activity)
+                            .setTitle(activity.getString(R.string.start_race_alert_finished_title))
+                            .setMessage(activity.getString(R.string.start_race_alert_finished_message))
                             .setPositiveButton(android.R.string.ok, null)
                             .show();
 
@@ -154,15 +154,16 @@ public class RaceModel {
         }
     }
 
-    public void checkFinish(Context context) {
-        if (isStarted() && !isRaceAbleToStart()) {
-            stopRace(context);
+    public void checkFinishFromActivity(Activity activity) {
+        checkFinishOnBackground(activity);
 
-            new AlertDialog.Builder(context)
-                    .setTitle(context.getString(R.string.auto_race_ended_title))
-                    .setMessage(context.getString(R.string.auto_race_ended_message))
+        if (this.showEndRaceAlert) {
+            new AlertDialog.Builder(activity)
+                    .setTitle(activity.getString(R.string.auto_race_ended_title))
+                    .setMessage(activity.getString(R.string.auto_race_ended_message))
                     .setPositiveButton(android.R.string.ok, null)
                     .show();
+            this.showEndRaceAlert = false;
         }
     }
 
@@ -232,6 +233,8 @@ public class RaceModel {
 
     private BroadcastReceiver mLocationChangedReceiver;
 
+    private boolean showEndRaceAlert = false;
+
 
     private void onLocationChanged(Context context, Location location) {
         if (isTimeInRace()) {
@@ -241,7 +244,7 @@ public class RaceModel {
         fireLocationUpdateEvent(context, location);
 
         // Stop if race is over.
-        checkFinish(context);
+        checkFinishOnBackground(context);
 
         notifySomeRaceInfoChanged(context);
     }
@@ -284,6 +287,13 @@ public class RaceModel {
 
         EventUploaderService.addEvent(context, event);
         EventUploaderService.performUpload(context);
+    }
+
+    private void checkFinishOnBackground(Context context) {
+        if (isStarted() && !isRaceAbleToStart()) {
+            stopRace(context);
+            this.showEndRaceAlert = true;
+        }
     }
 
     private void notifySomeRaceInfoChanged(Context context) {

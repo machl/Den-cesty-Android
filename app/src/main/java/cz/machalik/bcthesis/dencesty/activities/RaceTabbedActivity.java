@@ -90,6 +90,14 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Stop race if race is over.
+        this.raceModel.checkFinishFromActivity(this);
+    }
+
+    @Override
     protected void onDestroy() {
         this.raceModel.stopRace(this);
         super.onDestroy();
