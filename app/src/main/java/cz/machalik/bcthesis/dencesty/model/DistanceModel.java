@@ -36,7 +36,9 @@ public class DistanceModel {
     private int lastDistanceToNextCheckpoint = 0;
     private int offRouteUpdatesCounter = 0;
 
-    public DistanceModel() { }
+    public DistanceModel() {
+        lastKnownLocation = null;
+    }
 
     public void init(JSONObject data) {
         final JSONObject raceInfo = data.optJSONObject("race");

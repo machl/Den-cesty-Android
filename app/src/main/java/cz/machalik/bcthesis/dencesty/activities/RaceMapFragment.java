@@ -111,6 +111,10 @@ public class RaceMapFragment extends MapFragment {
         super.onResume();
 
         registerBroadcastReceivers();
+
+        if (getMap() != null) {
+            onDistanceChangedNotification();
+        }
     }
 
     @Override
