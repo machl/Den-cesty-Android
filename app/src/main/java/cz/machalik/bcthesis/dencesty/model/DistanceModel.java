@@ -99,7 +99,11 @@ public class DistanceModel {
 
     private int calculateDistance(Location location) {
 
-        for (int i = lastCheckpoint; i < checkpoints.length - 1; i++) {
+        int count = checkpoints.length - 1;
+        int halfForward = lastCheckpoint + (count / 2);
+        int limit = Math.min(count, halfForward);
+
+        for (int i = lastCheckpoint; i < limit; i++) {
             Checkpoint last = checkpoints[i];
             Checkpoint next = checkpoints[i+1];
 
