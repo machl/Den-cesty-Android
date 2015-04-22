@@ -8,8 +8,8 @@ android {
         applicationId "cz.machalik.bcthesis.dencesty"
         minSdkVersion 16
         targetSdkVersion 22
-        versionCode 7
-        versionName "3.2"
+        versionCode 8
+        versionName "3.3"
     }
     buildTypes {
         release {
