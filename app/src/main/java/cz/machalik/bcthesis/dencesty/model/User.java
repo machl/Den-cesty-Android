@@ -9,6 +9,7 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import cz.machalik.bcthesis.dencesty.BuildConfig;
+import cz.machalik.bcthesis.dencesty.MyApplication;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.other.FileLogger;
@@ -65,8 +66,27 @@ public class User {
 
     public static boolean hasSavedCreditials(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        SharedPreferences sharedSecurePreferences = MyApplication.get().getSecureSharedPreferences();
+
+        // Remove old sharedPreferences password in plaintext (version 3.3 to 3.4 upgrade)
+        if (sharedPreferences.contains(SHAREDPREFERENCES_PASSWORD_KEY)) {
+            String plainPassword = sharedPreferences.getString(SHAREDPREFERENCES_PASSWORD_KEY, null);
+
+            // Remove from unsecure preferences
+            sharedPreferences.edit()
+                    .remove(SHAREDPREFERENCES_PASSWORD_KEY)
+                    .commit();
+
+            Log.i(TAG, "Removing old password creditials");
+
+            // Add to secure preferences
+            sharedSecurePreferences.edit()
+                    .putString(SHAREDPREFERENCES_PASSWORD_KEY, plainPassword)
+                    .commit();
+        }
+
         return sharedPreferences.contains(SHAREDPREFERENCES_EMAIL_KEY)
-                && sharedPreferences.contains(SHAREDPREFERENCES_PASSWORD_KEY);
+                && sharedSecurePreferences.contains(SHAREDPREFERENCES_PASSWORD_KEY);
     }
 
     /**
@@ -81,8 +101,8 @@ public class User {
      * Obtain password for login from shared preferences
      */
     public static String getSavedCreditialsPassword(Context context) { // TODO: change to token (http://stackoverflow.com/questions/1925486/android-storing-username-and-password)
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        return sharedPreferences.getString(SHAREDPREFERENCES_PASSWORD_KEY, null);
+        SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
+        return secureSharedPreferences.getString(SHAREDPREFERENCES_PASSWORD_KEY, null);
     }
 
 
@@ -129,17 +149,27 @@ public class User {
 
     private static void saveCreditials(Context context, String email, String password) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(SHAREDPREFERENCES_EMAIL_KEY, email);
-        editor.putString(SHAREDPREFERENCES_PASSWORD_KEY, password);
-        editor.commit();
+        SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
+
+        sharedPreferences.edit()
+                .putString(SHAREDPREFERENCES_EMAIL_KEY, email)
+                .commit();
+
+        secureSharedPreferences.edit()
+                .putString(SHAREDPREFERENCES_PASSWORD_KEY, password)
+                .commit();
     }
 
     private static void removeCreditials(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove(SHAREDPREFERENCES_EMAIL_KEY);
-        editor.remove(SHAREDPREFERENCES_PASSWORD_KEY);
-        editor.commit();
+        SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
+
+        sharedPreferences.edit()
+                .remove(SHAREDPREFERENCES_EMAIL_KEY)
+                .commit();
+
+        secureSharedPreferences.edit()
+                .remove(SHAREDPREFERENCES_PASSWORD_KEY)
+                .commit();
     }
 }

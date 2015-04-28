@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -85,6 +86,7 @@ public class LoginActivity extends Activity {
 
             mEmailView.setText(email);
 
+            Log.i(TAG, "Attempting automatic login");
             performLoginTask(email, password);
         }
     }
