@@ -232,16 +232,29 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
 
     private class RacesListAdapter extends BaseAdapter {
 
+        private List<RaceItem> data;
         private final Context context;
         private SimpleDateFormat dateFormatter = new SimpleDateFormat(getString(R.string.races_list_item_dateformat));
 
         public RacesListAdapter(Context context) {
             this.context = context;
+            loadRacesData();
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            loadRacesData();
+            super.notifyDataSetChanged();
+        }
+
+        private void loadRacesData() {
+            // Make copy to be sure that race condition on data never happen
+            this.data = new ArrayList<>(races);
         }
 
         @Override
         public int getCount() {
-            return races.size();
+            return this.data.size();
         }
 
         @Override
@@ -251,7 +264,7 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
 
         @Override
         public RaceItem getItem(int position) {
-            return races.get(position);
+            return this.data.get(position);
         }
 
         @Override
