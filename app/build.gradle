@@ -25,4 +25,7 @@ dependencies {
     compile 'com.android.support:support-v13:22.0.0'
     compile 'com.google.android.gms:play-services-location:6.5.+'
     compile 'com.google.android.gms:play-services-maps:6.5.+'
+
+    // ACRA crash reports
+    compile 'ch.acra:acra:4.6.1'
 }
