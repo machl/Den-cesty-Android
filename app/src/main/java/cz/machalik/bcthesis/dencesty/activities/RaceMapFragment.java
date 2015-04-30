@@ -76,6 +76,14 @@ public class RaceMapFragment extends MapFragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Retain this fragment across configuration changes.
+        setRetainInstance(true);
+    }
+
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 

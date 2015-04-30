@@ -230,7 +230,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
 
     @Override
     public void onConnected(Bundle bundle) {
-        Log.e(TAG, "Connected to GoogleApiClient");
+        Log.d(TAG, "Connected to GoogleApiClient");
         startLocationUpdates();
     }
 

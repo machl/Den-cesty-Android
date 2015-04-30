@@ -9,6 +9,7 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import java.util.Locale;
@@ -19,6 +20,8 @@ import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 
 public class RaceTabbedActivity extends Activity implements ActionBar.TabListener,
         RaceFragment.OnRaceFragmentInteractionListener {
+
+    protected static final String TAG = "RaceTabbedActivity";
 
     private RaceModel raceModel;
     private WalkersModel walkersModel;
@@ -99,7 +102,11 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
 
     @Override
     protected void onDestroy() {
-        this.raceModel.stopRace(this);
+        Log.d("RaceTabbedActivity", "onDestroy called");
+        if (isFinishing()) {
+            // to be sure that race in not left in progress when activity is finished
+            this.raceModel.stopRace(this);
+        }
         super.onDestroy();
     }
 

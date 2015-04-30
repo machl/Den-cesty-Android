@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +53,7 @@ public class RaceFragment extends Fragment {
      * @return A new instance of fragment RaceFragment.
      */
     public static RaceFragment newInstance(RaceModel raceModel) {
+        Log.d(TAG, "newInstance called");
         RaceFragment fragment = new RaceFragment();
         fragment.raceModel = raceModel;
         return fragment;
@@ -59,6 +61,15 @@ public class RaceFragment extends Fragment {
 
     public RaceFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Retain this fragment across configuration changes.
+        // http://www.androiddesignpatterns.com/2013/04/retaining-objects-across-config-changes.html
+        setRetainInstance(true);
     }
 
     @Override
@@ -189,6 +200,7 @@ public class RaceFragment extends Fragment {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
                         //Yes button clicked
+                        Log.d(TAG, "User manually stopped race");
                         endRace();
                         break;
 
@@ -207,6 +219,7 @@ public class RaceFragment extends Fragment {
     }
 
     private void endRace() {
+        Log.d(TAG, "EndRace called");
         this.raceModel.stopRace(getActivity());
         updateVisibilityOfButtons();
     }

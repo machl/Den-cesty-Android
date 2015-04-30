@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -137,6 +138,7 @@ public class RaceModel {
     }
 
     public void stopRace(Context context) {
+        Log.d(TAG, "StopRace called");
         if (this.isStarted) {
             this.isStarted = false;
 
@@ -155,6 +157,7 @@ public class RaceModel {
     }
 
     public void checkFinishFromActivity(Activity activity) {
+        Log.d(TAG, "Checking finish from activity.");
         checkFinishOnBackground(activity);
 
         if (this.showEndRaceAlert) {
@@ -291,6 +294,7 @@ public class RaceModel {
 
     private void checkFinishOnBackground(Context context) {
         if (isStarted() && !isRaceAbleToStart()) {
+            Log.d(TAG, "checkFinishOnBackground stopping race");
             stopRace(context);
             this.showEndRaceAlert = true;
         }
