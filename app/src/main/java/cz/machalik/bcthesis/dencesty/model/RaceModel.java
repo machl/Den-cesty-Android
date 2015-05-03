@@ -39,8 +39,8 @@ public class RaceModel {
 
     public RaceModel() {}
 
-    public boolean init(int raceId) {
-        JSONObject response = WebAPI.synchronousRaceDataRequest(raceId, User.getWalkerId());
+    public boolean init(Context context, int raceId) {
+        JSONObject response = WebAPI.synchronousRaceDataRequest(raceId, User.get().getWalkerId());
 
         if (response == null || !response.has("race") || !response.has("checkpoints")) {
             return false;
@@ -58,15 +58,33 @@ public class RaceModel {
             e.printStackTrace();
         }
 
-        // Process scoreboard:
-        //final JSONObject scoreboard = response.optJSONObject("scoreboard");
-        //if (scoreboard != null && scoreboard.length() > 0) {
-        //    this.isStarted = (1 == scoreboard.optInt("raceState"));
-        //} else {
-        //    this.isStarted = false;
-        //}
-
         this.distanceModel.init(response);
+
+        // Process scoreboard:
+        final JSONObject scoreboard = response.optJSONObject("scoreboard");
+        if (scoreboard != null && scoreboard.length() > 0) {
+            this.isStarted = (1 == scoreboard.optInt("raceState"));
+
+            if (this.isStarted) {
+                if (isRaceAbleToStart()) {
+                    // Restart race (location service)
+                    Log.d(TAG, "Restarting race automatically from init");
+
+                    Event event = new Event(context, User.get().getWalkerId(), this.raceId, Event.EVENTTYPE_LOG);
+                    event.getExtras().put("msg", "Restarting race automatically");
+                    EventUploaderService.addEvent(context, event);
+                    EventUploaderService.performUpload(context);
+
+                    startLocationService(context);
+                } else {
+                    // End race manually
+                    Log.d(TAG, "Ending race automatically from init");
+                    checkFinishOnBackground(context);
+                }
+            }
+        } else {
+            this.isStarted = false;
+        }
 
         return true;
     }
@@ -79,28 +97,12 @@ public class RaceModel {
                 Context context = activity;
 
                 // Create new start race event
-                Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
+                Event event = new Event(context, User.get().getWalkerId(), this.raceId, Event.EVENTTYPE_STARTRACE);
                 event.getExtras().put("updateInterval", BackgroundLocationService.UPDATE_INTERVAL_IN_MILLISECONDS);
                 EventUploaderService.addEvent(context, event);
                 EventUploaderService.performUpload(context);
 
-                // Register broadcast receiver on location updates
-                mLocationChangedReceiver = new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        if (intent.getAction().equals(BackgroundLocationService.ACTION_LOCATION_CHANGED)) {
-                            onLocationChanged(context, BackgroundLocationService.getLastKnownLocation());
-                        }
-                    }
-                };
-                LocalBroadcastManager.getInstance(context)
-                        .registerReceiver(mLocationChangedReceiver,
-                                new IntentFilter(BackgroundLocationService.ACTION_LOCATION_CHANGED));
-
-                // Start background location service
-                BackgroundLocationService.start(context);
-
-                this.isStarted = true;
+                startLocationService(context);
 
                 if (!isTimeInRace()) {
                     new AlertDialog.Builder(activity)
@@ -147,7 +149,7 @@ public class RaceModel {
 
             // Create new stop race event
             //if (wasRunning) {
-                Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_STOPRACE);
+                Event event = new Event(context, User.get().getWalkerId(), this.raceId, Event.EVENTTYPE_STOPRACE);
                 EventUploaderService.addEvent(context, event);
                 EventUploaderService.performUpload(context);
             //}
@@ -238,6 +240,25 @@ public class RaceModel {
 
     private boolean showEndRaceAlert = false;
 
+    private void startLocationService(Context context) {
+        // Register broadcast receiver on location updates
+        mLocationChangedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(BackgroundLocationService.ACTION_LOCATION_CHANGED)) {
+                    onLocationChanged(context, BackgroundLocationService.getLastKnownLocation());
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(context)
+                .registerReceiver(mLocationChangedReceiver,
+                        new IntentFilter(BackgroundLocationService.ACTION_LOCATION_CHANGED));
+
+        // Start background location service
+        BackgroundLocationService.start(context);
+
+        this.isStarted = true;
+    }
 
     private void onLocationChanged(Context context, Location location) {
         if (isTimeInRace()) {
@@ -272,7 +293,7 @@ public class RaceModel {
         //Log.i(TAG, info);
         FileLogger.log(TAG, info);*/
 
-        Event event = new Event(context, User.getWalkerId(), this.raceId, Event.EVENTTYPE_LOCATIONUPDATE);
+        Event event = new Event(context, User.get().getWalkerId(), this.raceId, Event.EVENTTYPE_LOCATIONUPDATE);
         event.getExtras().put("latitude", latitude);
         event.getExtras().put("longitude", longitude);
         event.getExtras().put("altitude", altitude);

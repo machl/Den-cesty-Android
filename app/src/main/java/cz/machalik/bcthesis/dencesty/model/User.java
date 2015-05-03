@@ -24,11 +24,15 @@ public class User {
 
     /****************************** Public API: ******************************/
 
+    public static User get() {
+        return MyApplication.get().getUserModel();
+    }
+
     public enum LoginResult {
         SUCCESS, FAILED, CONNECTION_ERROR
     }
 
-    public static LoginResult attemptLogin(Context context, String email, String password) {
+    public LoginResult attemptLogin(Context context, String email, String password) {
         JSONObject jsonResponse = WebAPI.synchronousLoginHandlerRequest(email, password);
 
         if (jsonResponse == null) {
@@ -47,24 +51,24 @@ public class User {
         }
     }
 
-    public static void logout(Context context) {
-        isLogged = false;
+    public void logout(Context context) {
+        setLogged(context, false);
         removeCreditials(context);
     }
 
-    public static boolean isLogged() {
-        return isLogged;
+    public boolean isLogged() {
+        return this.isLogged;
     }
 
-    public static int getWalkerId() {
-        return walkerId;
+    public int getWalkerId() {
+        return this.walkerId;
     }
 
-    public static String getWalkerFullName() {
-        return walkerName + " " + walkerSurname;
+    public String getWalkerFullName() {
+        return this.walkerName + " " + this.walkerSurname;
     }
 
-    public static boolean hasSavedCreditials(Context context) {
+    public boolean hasSavedCreditials(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         SharedPreferences sharedSecurePreferences = MyApplication.get().getSecureSharedPreferences();
 
@@ -92,7 +96,7 @@ public class User {
     /**
      * Obtain email for login from shared preferences
      */
-    public static String getSavedCreditialsEmail(Context context) {
+    public String getSavedCreditialsEmail(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         return sharedPreferences.getString(SHAREDPREFERENCES_EMAIL_KEY, null);
     }
@@ -100,7 +104,7 @@ public class User {
     /**
      * Obtain password for login from shared preferences
      */
-    public static String getSavedCreditialsPassword(Context context) { // TODO: change to token (http://stackoverflow.com/questions/1925486/android-storing-username-and-password)
+    public String getSavedCreditialsPassword(Context context) { // TODO: change to token (http://stackoverflow.com/questions/1925486/android-storing-username-and-password)
         SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
         return secureSharedPreferences.getString(SHAREDPREFERENCES_PASSWORD_KEY, null);
     }
@@ -111,19 +115,72 @@ public class User {
     private static final String SHAREDPREFERENCES_EMAIL_KEY = "cz.machalik.bcthesis.dencesty.User.email";
     private static final String SHAREDPREFERENCES_PASSWORD_KEY = "cz.machalik.bcthesis.dencesty.User.password";
 
+    // Keys for saving UserModel state to shared preferences for recreation on low memory
+    private static final String SHAREDPREFERENCES_STATE_ISLOGGED_KEY = "cz.machalik.bcthesis.dencesty.User.state.isLogged";
+    private static final String SHAREDPREFERENCES_STATE_WALKERID_KEY = "cz.machalik.bcthesis.dencesty.User.state.walkerId";
+    private static final String SHAREDPREFERENCES_STATE_WALKERNAME_KEY = "cz.machalik.bcthesis.dencesty.User.state.walkerName";
+    private static final String SHAREDPREFERENCES_STATE_WALKERSURNAME_KEY = "cz.machalik.bcthesis.dencesty.User.state.walkerSurname";
+
     /**
      * True, if user is successfully logged.
      */
-    private static boolean isLogged = false;
+    private boolean isLogged = false;
 
     /**
      * Info about logged user.
      */
-    private static int walkerId;
-    private static String walkerName;
-    private static String walkerSurname;
+    private int walkerId;
+    private String walkerName;
+    private String walkerSurname;
 
-    private static void onSuccessfulLogin(Context context, JSONObject jsonData) {
+    public User(Context context) {
+        // recreation on low memory
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        this.isLogged = sharedPreferences.getBoolean(SHAREDPREFERENCES_STATE_ISLOGGED_KEY, false);
+        if (this.isLogged) {
+            this.walkerId = sharedPreferences.getInt(SHAREDPREFERENCES_STATE_WALKERID_KEY, 0);
+            this.walkerName = sharedPreferences.getString(SHAREDPREFERENCES_STATE_WALKERNAME_KEY, null);
+            this.walkerSurname = sharedPreferences.getString(SHAREDPREFERENCES_STATE_WALKERSURNAME_KEY, null);
+        }
+    }
+
+    public void setLogged(Context context, boolean isLogged) {
+        this.isLogged = isLogged;
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        sharedPreferences.edit()
+                .putBoolean(SHAREDPREFERENCES_STATE_ISLOGGED_KEY, isLogged)
+                .commit();
+    }
+
+    private void setWalkerId(Context context, int walkerId) {
+        this.walkerId = walkerId;
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        sharedPreferences.edit()
+                .putInt(SHAREDPREFERENCES_STATE_WALKERID_KEY, walkerId)
+                .commit();
+    }
+
+    private void setWalkerName(Context context, String walkerName) {
+        this.walkerName = walkerName;
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        sharedPreferences.edit()
+                .putString(SHAREDPREFERENCES_STATE_WALKERNAME_KEY, walkerName)
+                .commit();
+    }
+
+    private void setWalkerSurname(Context context, String walkerSurname) {
+        this.walkerSurname = walkerSurname;
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        sharedPreferences.edit()
+                .putString(SHAREDPREFERENCES_STATE_WALKERSURNAME_KEY, walkerSurname)
+                .commit();
+    }
+
+    private void onSuccessfulLogin(Context context, JSONObject jsonData) {
         if (!jsonData.has("id") || !jsonData.has("name") || !jsonData.has("surname")) {
             String message = "Response login missing info";
             Log.e(TAG, message);
@@ -131,12 +188,12 @@ public class User {
             return;
         }
 
-        walkerId = jsonData.optInt("id");
-        walkerName = jsonData.optString("name");
-        walkerSurname = jsonData.optString("surname");
-        isLogged = true;
+        setWalkerId(context, jsonData.optInt("id"));
+        setWalkerName(context, jsonData.optString("name"));
+        setWalkerSurname(context, jsonData.optString("surname"));
+        setLogged(context, true);
 
-        Event event = new Event(context, walkerId, Event.EVENTTYPE_LOGIN);
+        Event event = new Event(context, getWalkerId(), Event.EVENTTYPE_LOGIN);
         event.getExtras().put("systemName", Build.VERSION.RELEASE + " " + Build.VERSION.CODENAME);
         event.getExtras().put("sdk", Integer.valueOf(Build.VERSION.SDK_INT));
         event.getExtras().put("model", Build.MODEL);
@@ -147,7 +204,7 @@ public class User {
         EventUploaderService.performUpload(context);
     }
 
-    private static void saveCreditials(Context context, String email, String password) {
+    private void saveCreditials(Context context, String email, String password) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
 
@@ -160,12 +217,15 @@ public class User {
                 .commit();
     }
 
-    private static void removeCreditials(Context context) {
+    private void removeCreditials(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
 
         sharedPreferences.edit()
                 .remove(SHAREDPREFERENCES_EMAIL_KEY)
+                .remove(SHAREDPREFERENCES_STATE_WALKERID_KEY)
+                .remove(SHAREDPREFERENCES_STATE_WALKERNAME_KEY)
+                .remove(SHAREDPREFERENCES_STATE_WALKERSURNAME_KEY)
                 .commit();
 
         secureSharedPreferences.edit()

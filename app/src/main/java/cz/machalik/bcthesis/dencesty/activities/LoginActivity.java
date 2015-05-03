@@ -80,9 +80,9 @@ public class LoginActivity extends Activity {
     }
 
     public void attemptAutomaticLogin() {
-        if (User.hasSavedCreditials(this)) {
-            String email = User.getSavedCreditialsEmail(this);
-            String password = User.getSavedCreditialsPassword(this);
+        if (User.get().hasSavedCreditials(this)) {
+            String email = User.get().getSavedCreditialsEmail(this);
+            String password = User.get().getSavedCreditialsPassword(this);
 
             mEmailView.setText(email);
 
@@ -229,7 +229,7 @@ public class LoginActivity extends Activity {
 
         @Override
         protected LoginResult doInBackground(Void... params) {
-            return User.attemptLogin(mContext, mEmail, mPassword);
+            return User.get().attemptLogin(mContext, mEmail, mPassword);
         }
 
         @Override

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import cz.machalik.bcthesis.dencesty.MyApplication;
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.Checkpoint;
 import cz.machalik.bcthesis.dencesty.model.DistanceModel;
@@ -45,9 +46,6 @@ public class RaceMapFragment extends MapFragment {
 
     protected static final String TAG = "RaceMapFragment";
 
-    private RaceModel raceModel;
-    private WalkersModel walkersModel;
-
     private BroadcastReceiver mDistanceChangedReceiver;
     private BroadcastReceiver mWalkersRefreshReceiver;
 
@@ -58,21 +56,25 @@ public class RaceMapFragment extends MapFragment {
 
     /**
      * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * this fragment.
      *
-     * @param raceModel Race model.
-     * @param walkersModel Walkers model.
      * @return A new instance of fragment RaceMapFragment.
      */
-    public static RaceMapFragment newInstance(RaceModel raceModel, WalkersModel walkersModel) {
+    public static RaceMapFragment newInstance() {
         RaceMapFragment fragment = new RaceMapFragment();
-        fragment.raceModel = raceModel;
-        fragment.walkersModel = walkersModel;
         return fragment;
     }
 
     public RaceMapFragment() {
         // Required empty public constructor
+    }
+
+    private RaceModel getRaceModel() {
+        return MyApplication.get().getRaceModel();
+    }
+
+    private WalkersModel getWalkersModel() {
+        return MyApplication.get().getWalkersModel();
     }
 
     @Override
@@ -176,7 +178,7 @@ public class RaceMapFragment extends MapFragment {
             this.lastLocationUpdateMarker.remove();
         }
 
-        int distance = this.raceModel.getRaceDistance();
+        int distance = getRaceModel().getRaceDistance();
         String markerTitle = String.format(getActivity().getString(R.string.map_marker_title_distance), distance);
         String markerSnippet = String.format(getActivity().getString(R.string.map_marker_snippet_distance),
                 timeFormatter.format(new Date(location.getTime())));
@@ -197,9 +199,9 @@ public class RaceMapFragment extends MapFragment {
             }
         }
 
-        Walker[] walkersAhead = this.walkersModel.getWalkersAhead();
-        Walker[] walkersBehind = this.walkersModel.getWalkersBehind();
-        Walker presentWalker = this.walkersModel.getPresentWalker();
+        Walker[] walkersAhead = getWalkersModel().getWalkersAhead();
+        Walker[] walkersBehind = getWalkersModel().getWalkersBehind();
+        Walker presentWalker = getWalkersModel().getPresentWalker();
 
         this.walkersMapMarkers = new ArrayList<>(walkersAhead.length + walkersBehind.length);
 
@@ -253,7 +255,7 @@ public class RaceMapFragment extends MapFragment {
     }
 
     private void drawCheckpoints() {
-        Checkpoint[] checkpoints = this.raceModel.getCheckpoints();
+        Checkpoint[] checkpoints = getRaceModel().getCheckpoints();
 
         if (checkpoints == null || checkpoints.length == 0) {
             return;

@@ -13,9 +13,9 @@ import android.widget.TextView;
 
 import java.util.Date;
 
+import cz.machalik.bcthesis.dencesty.MyApplication;
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 import cz.machalik.bcthesis.dencesty.other.SwipeRefreshListFragment;
 
@@ -29,8 +29,6 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
     private static final int TIMEINTERVAL_TO_SUPPRESS_REFRESHING = 5 * 60; // in seconds
 
     private Date lastTimeRefreshed = null;
-    private RaceModel raceModel;
-    private WalkersModel walkersModel;
 
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
@@ -39,10 +37,8 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
 
     private WalkersListAdapter walkersListAdapter = null;
 
-    public static WalkersListFragment newInstance(RaceModel raceModel, WalkersModel walkersModel) {
+    public static WalkersListFragment newInstance() {
         WalkersListFragment fragment = new WalkersListFragment();
-        fragment.raceModel = raceModel;
-        fragment.walkersModel = walkersModel;
         return fragment;
     }
 
@@ -51,6 +47,10 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
      * fragment (e.g. upon screen orientation changes).
      */
     public WalkersListFragment() {
+    }
+
+    private WalkersModel getWalkersModel() {
+        return MyApplication.get().getWalkersModel();
     }
 
     @Override
@@ -166,7 +166,7 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            return walkersModel.fetchWalkersFromWeb(mContext);
+            return getWalkersModel().fetchWalkersFromWeb(mContext);
         }
 
         @Override
@@ -193,15 +193,15 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
         }
 
         public WalkersModel.Walker[] getWalkersAhead() {
-            return walkersModel.getWalkersAhead();
+            return getWalkersModel().getWalkersAhead();
         }
 
         public WalkersModel.Walker[] getWalkersBehind() {
-            return walkersModel.getWalkersBehind();
+            return getWalkersModel().getWalkersBehind();
         }
 
         public WalkersModel.Walker getMe() {
-            return walkersModel.getPresentWalker();
+            return getWalkersModel().getPresentWalker();
         }
 
         @Override

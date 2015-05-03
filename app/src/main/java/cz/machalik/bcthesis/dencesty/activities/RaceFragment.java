@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import cz.machalik.bcthesis.dencesty.MyApplication;
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
@@ -32,8 +33,6 @@ public class RaceFragment extends Fragment {
 
     private OnRaceFragmentInteractionListener mListener;
 
-    private RaceModel raceModel;
-
     private BroadcastReceiver mUnsentCounterReceiver;
     private BroadcastReceiver mRaceInfoChangedReceiver;
 
@@ -46,21 +45,22 @@ public class RaceFragment extends Fragment {
     private TextView mLocationUpdatesCounter;
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Use this factory method to create a new instance
      *
-     * @param raceModel Current RaceModel.
      * @return A new instance of fragment RaceFragment.
      */
-    public static RaceFragment newInstance(RaceModel raceModel) {
+    public static RaceFragment newInstance() {
         Log.d(TAG, "newInstance called");
         RaceFragment fragment = new RaceFragment();
-        fragment.raceModel = raceModel;
         return fragment;
     }
 
     public RaceFragment() {
         // Required empty public constructor
+    }
+
+    private RaceModel getRaceModel() {
+        return MyApplication.get().getRaceModel();
     }
 
     @Override
@@ -138,7 +138,7 @@ public class RaceFragment extends Fragment {
 
     private void onDidAppear() {
         // Stop race if race is over.
-        this.raceModel.checkFinishFromActivity(getActivity());
+        getRaceModel().checkFinishFromActivity(getActivity());
 
         refreshRaceInfoValues();
         setUnsentCounter(EventUploaderService.getEventQueueSize());
@@ -189,7 +189,7 @@ public class RaceFragment extends Fragment {
 
 
     private void startButtonPressed() {
-        this.raceModel.startRace(getActivity());
+        getRaceModel().startRace(getActivity());
         updateVisibilityOfButtons();
     }
 
@@ -220,14 +220,14 @@ public class RaceFragment extends Fragment {
 
     private void endRace() {
         Log.d(TAG, "EndRace called");
-        this.raceModel.stopRace(getActivity());
+        getRaceModel().stopRace(getActivity());
         updateVisibilityOfButtons();
     }
 
     private void refreshRaceInfoValues() {
-        this.mDistanceTextView.setText(String.format("%,d m", this.raceModel.getRaceDistance()));
-        this.mAvgSpeedTextView.setText(String.format("%.2f km/h", this.raceModel.getRaceAvgSpeed()));
-        this.mLocationUpdatesCounter.setText(""+this.raceModel.getLocationUpdatesCounter());
+        this.mDistanceTextView.setText(String.format("%,d m", getRaceModel().getRaceDistance()));
+        this.mAvgSpeedTextView.setText(String.format("%.2f km/h", getRaceModel().getRaceAvgSpeed()));
+        this.mLocationUpdatesCounter.setText(""+getRaceModel().getLocationUpdatesCounter());
     }
 
     private void setUnsentCounter(int numOfUnsentMessages) {
@@ -243,7 +243,7 @@ public class RaceFragment extends Fragment {
             this.mListener.onRaceFragmentUpdateVisibilityOfButtons();
         }
 
-        if (this.raceModel.isStarted()) {
+        if (getRaceModel().isStarted()) {
             // TODO: animation?
             mStartraceButton.setVisibility(View.GONE);
             mEndraceButton.setVisibility(View.VISIBLE);

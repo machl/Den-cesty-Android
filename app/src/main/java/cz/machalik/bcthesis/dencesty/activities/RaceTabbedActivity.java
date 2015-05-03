@@ -6,6 +6,9 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -14,6 +17,7 @@ import android.view.KeyEvent;
 
 import java.util.Locale;
 
+import cz.machalik.bcthesis.dencesty.MyApplication;
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel;
@@ -23,8 +27,12 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
 
     protected static final String TAG = "RaceTabbedActivity";
 
-    private RaceModel raceModel;
-    private WalkersModel walkersModel;
+    protected static final String EXTRA_RACEID = "cz.machalik.bcthesis.dencesty.extra.RACEID";
+
+    private LoadRaceTask mLoadRaceTask = null;
+    private RaceModel preparedRaceModel = null;
+
+    private int raceId;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -41,19 +49,104 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
      */
     ViewPager mViewPager;
 
+    private RaceModel getRaceModel() {
+        return MyApplication.get().getRaceModel();
+    }
+
+    private WalkersModel getWalkersModel() {
+        return MyApplication.get().getWalkersModel();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_race_tabbed);
 
-        // Obtain prepared race model from previous activity
-        this.raceModel = RacesListActivity.preparedRaceModel;
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            this.raceId = extras.getInt(EXTRA_RACEID);
+        } else {
+            this.raceId = savedInstanceState.getInt(EXTRA_RACEID);
+        }
+
+        if (getRaceModel() == null || getRaceModel().getRaceId() != this.raceId) {
+            attemptLoadRace(this.raceId);
+        } else {
+            if (MyApplication.get().getWalkersModel() == null) {
+                MyApplication.get().setWalkersModel(new WalkersModel(this.raceId));
+            }
+
+            setUpViewPager();
+        }
+    }
+
+    private void attemptLoadRace(int raceId) {
+        mLoadRaceTask = new LoadRaceTask(this, raceId);
+        mLoadRaceTask.execute();
+    }
+
+    private class LoadRaceTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final Context mContext;
+        private final int mRaceId;
+        private ProgressDialog dialog;
+
+        public LoadRaceTask(Context context, int raceId) {
+            mContext = context;
+            mRaceId = raceId;
+            dialog = new ProgressDialog(context);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            dialog.setMessage(getString(R.string.downloading_race_info));
+            dialog.show();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            preparedRaceModel = new RaceModel();
+            return preparedRaceModel.init(mContext, mRaceId);
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mLoadRaceTask = null;
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+
+            if (success) {
+                Log.i(TAG, "Successful LoadRace");
+                onSuccessfulLoadRace();
+            } else {
+                Log.i(TAG, "Failed LoadRace");
+                finish();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mLoadRaceTask = null;
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            Log.i(TAG, "Cancelled RaceInit");
+            //finish();
+        }
+    }
+
+    private void onSuccessfulLoadRace() {
+        MyApplication.get().setRaceModel(this.preparedRaceModel);
+        this.preparedRaceModel = null;
 
         // Init shared WalkersModel
-        int raceId = this.raceModel.getRaceId();
-        this.walkersModel = new WalkersModel(raceId);
+        int raceId = getRaceModel().getRaceId();
+        MyApplication.get().setWalkersModel(new WalkersModel(raceId));
 
         setUpViewPager();
+
+        getRaceModel().checkFinishFromActivity(this);
     }
 
     private void setUpViewPager() {
@@ -97,15 +190,30 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         super.onResume();
 
         // Stop race if race is over.
-        this.raceModel.checkFinishFromActivity(this);
+        if (getRaceModel() != null) {
+            getRaceModel().checkFinishFromActivity(this);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(EXTRA_RACEID, this.raceId);
     }
 
     @Override
     protected void onDestroy() {
         Log.d("RaceTabbedActivity", "onDestroy called");
         if (isFinishing()) {
+
+            if (this.mLoadRaceTask != null) {
+                this.mLoadRaceTask.cancel(true);
+            }
+
             // to be sure that race in not left in progress when activity is finished
-            this.raceModel.stopRace(this);
+            if (getRaceModel() != null) {
+                getRaceModel().stopRace(this);
+            }
         }
         super.onDestroy();
     }
@@ -114,7 +222,7 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (this.raceModel.isStarted()) {
+            if (getRaceModel() != null && getRaceModel().isStarted()) {
                 new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.back_key_warning_title))
                         .setMessage(getString(R.string.back_key_warning_message))
@@ -131,7 +239,7 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
 
     @Override
     public void onRaceFragmentUpdateVisibilityOfButtons() {
-        if (this.raceModel.isStarted()) {
+        if (getRaceModel().isStarted()) {
             getActionBar().setDisplayHomeAsUpEnabled(false);
         } else {
             getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -168,11 +276,11 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
             // getItem is called to instantiate the fragment for the given page.
             switch (position) {
                 case 0:
-                    return RaceFragment.newInstance(raceModel);
+                    return RaceFragment.newInstance();
                 case 1:
-                    return WalkersListFragment.newInstance(raceModel, walkersModel);
+                    return WalkersListFragment.newInstance();
                 case 2:
-                    return RaceMapFragment.newInstance(raceModel, walkersModel);
+                    return RaceMapFragment.newInstance();
                 default:
                     return null;
             }

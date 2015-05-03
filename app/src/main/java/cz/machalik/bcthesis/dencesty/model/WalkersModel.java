@@ -29,7 +29,7 @@ public class WalkersModel {
     /****************************** Public API: ******************************/
 
     public boolean fetchWalkersFromWeb(Context context) {
-        JSONObject jsonResponse = WebAPI.synchronousWalkersListRequest(this.raceId, User.getWalkerId());
+        JSONObject jsonResponse = WebAPI.synchronousWalkersListRequest(this.raceId, User.get().getWalkerId());
 
         if (jsonResponse != null) {
             initializeWalkers(jsonResponse);
@@ -83,7 +83,7 @@ public class WalkersModel {
         this.raceId = raceId;
 
         // Basic init:
-        this.presentWalker = new Walker(User.getWalkerFullName(),
+        this.presentWalker = new Walker(User.get().getWalkerFullName(),
                                         0,
                                         0,
                                         RaceState.NOTSTARTED,
@@ -110,7 +110,7 @@ public class WalkersModel {
                 presentWalkerUpdatedAt = WebAPI.DATE_FORMAT_DOWNLOAD.parse(jsonData.optString("updated_at"));
             }
 
-            presentWalker = new Walker(User.getWalkerFullName(),
+            presentWalker = new Walker(User.get().getWalkerFullName(),
                     jsonData.optInt("distance"),
                     jsonData.optDouble("speed"),
                     jsonData.optInt("raceState"),

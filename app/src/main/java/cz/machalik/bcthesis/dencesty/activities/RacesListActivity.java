@@ -2,7 +2,6 @@ package cz.machalik.bcthesis.dencesty.activities;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -29,7 +28,6 @@ import java.util.List;
 
 import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
-import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.User;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
@@ -44,14 +42,8 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
     private RacesUpdateAsyncTask mRefreshTask = null;
-    private LoadRaceTask mLoadRaceTask = null;
 
     private List<RaceItem> races = new ArrayList<>();
-
-    /**
-     * Variable for passing loaded RaceModel to another activity
-     */
-    public static RaceModel preparedRaceModel = null;
 
     // UI references.
     private SwipeRefreshLayout mSwipeContainer;
@@ -117,7 +109,7 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
     }
 
     private void logout() {
-        User.logout(this);
+        User.get().logout(this);
         finish();
     }
 
@@ -304,7 +296,7 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
 
         long secondsSinceStart = (new Date().getTime() - selectedItem.startTime.getTime()) / 1000;
         if (secondsSinceStart > -TIMEINTERVAL_BEFORE_START_TO_ALLOW_CONTINUE) {
-            attemptLoadRace(selectedItem.id);
+            startRaceTabbedActivity(selectedItem.id);
         } else {
             new AlertDialog.Builder(this)
                     .setTitle(getString(R.string.start_soon_alert_title))
@@ -316,64 +308,9 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
 
     }
 
-    private void attemptLoadRace(int raceId) {
-        mLoadRaceTask = new LoadRaceTask(this, raceId);
-        mLoadRaceTask.execute();
-    }
-
-    private class LoadRaceTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final Context mContext;
-        private final int mRaceId;
-        private ProgressDialog dialog;
-
-        public LoadRaceTask(Context context, int raceId) {
-            mContext = context;
-            mRaceId = raceId;
-            dialog = new ProgressDialog(context);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            dialog.setMessage(getString(R.string.downloading_race_info));
-            dialog.show();
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            preparedRaceModel = new RaceModel();
-            return preparedRaceModel.init(mRaceId);
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mLoadRaceTask = null;
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-
-            if (success) {
-                //Log.i(TAG, "Successful LoadRace");
-                onSuccessfulLoadRace();
-            } else {
-                Log.i(TAG, "Failed LoadRace");
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mLoadRaceTask = null;
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-            Log.i(TAG, "Cancelled RaceInit");
-        }
-    }
-
-    private void onSuccessfulLoadRace() {
-        //Log.d(TAG, "Launching RaceActivity with ID "+preparedRaceModel.getRaceId());
-
+    private void startRaceTabbedActivity(int raceId) {
         Intent intent = new Intent(this, RaceTabbedActivity.class);
+        intent.putExtra(RaceTabbedActivity.EXTRA_RACEID, raceId);
         startActivity(intent);
     }
 }

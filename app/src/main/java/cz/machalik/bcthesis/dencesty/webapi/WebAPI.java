@@ -110,7 +110,7 @@ public class WebAPI {
     }
 
     public static JSONObject synchronousEventHandlerRequest(JSONArray eventsAsJson) {
-        if (!User.isLogged()) {
+        if (!User.get().isLogged()) {
             //Log.e(TAG, "User is not logged to do synchronousEventHandlerRequest!");
             return null;
         }
@@ -179,7 +179,7 @@ public class WebAPI {
     }
 
     public static JSONObject synchronousWalkersListRequest(int raceId, int walkerId) {
-        if (!User.isLogged()) {
+        if (!User.get().isLogged()) {
             //Log.e(TAG, "User is not logged to do synchronousWalkersListRequest!");
             return null;
         }
@@ -244,7 +244,7 @@ public class WebAPI {
     }
 
     public static JSONArray synchronousRacesListUpdateRequest() {
-        if (!User.isLogged()) {
+        if (!User.get().isLogged()) {
             Log.e(TAG, "User is not logged to do synchronousRacesListUpdateRequest!");
             return null;
         }
@@ -309,7 +309,7 @@ public class WebAPI {
     }
 
     public static JSONObject synchronousRaceDataRequest(int raceId, int walkerId) {
-        if (!User.isLogged()) {
+        if (!User.get().isLogged()) {
             Log.e(TAG, "User is not logged to do synchronousRaceDataRequest!");
             return null;
         }
