@@ -1,9 +1,14 @@
 package cz.machalik.bcthesis.dencesty.model;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,6 +18,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 
+import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
@@ -21,6 +27,9 @@ import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 public class DistanceModel {
 
     protected static final String TAG = "DistanceModel";
+
+    public static final int MIN_DISTANCE_TO_MARK_AS_OFF_THE_ROUTE_UPDATE = 300;
+    public static final int MIN_NUMBER_OF_OFF_THE_ROUTE_UPDATES_TO_NOTIFY = 3;
 
     public static final String ACTION_DISTANCE_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_DISTANCE_CHANGED";
 
@@ -33,8 +42,9 @@ public class DistanceModel {
     private static Location lastKnownLocation = null;
 
     // off the route detection
-    private int lastDistanceToNextCheckpoint = 0;
+    private float lastDistanceToNextCheckpoint = 0;
     private int offRouteUpdatesCounter = 0;
+    private int offRouteNotificationCounter = 0;
 
     public DistanceModel() {
         lastKnownLocation = null;
@@ -93,7 +103,7 @@ public class DistanceModel {
             onOnRouteLocationUpdate(location);
         } else {
             // off the route
-            onOffRouteLocationUpdate(location);
+            onOffRouteLocationUpdate(context, location);
         }
     }
 
@@ -168,10 +178,46 @@ public class DistanceModel {
     }
 
     private void onOnRouteLocationUpdate(Location location) {
-        // TODO: off road detection
+        this.lastDistanceToNextCheckpoint = 0;
+        this.offRouteUpdatesCounter = 0;
     }
 
-    private void onOffRouteLocationUpdate(Location location) {
-        // TODO: off road detection
+    private void onOffRouteLocationUpdate(Context context, Location location) {
+        Checkpoint nextCheckpoint = checkpoints[this.lastCheckpoint + 1];
+        float distanceToNextCheckpoint = distanceBetween(location.getLatitude(), location.getLongitude(),
+                                                        nextCheckpoint.latitude, nextCheckpoint.longitude);
+        float distanceDelta = distanceToNextCheckpoint - this.lastDistanceToNextCheckpoint;
+
+        if (distanceDelta > MIN_DISTANCE_TO_MARK_AS_OFF_THE_ROUTE_UPDATE) {
+            this.lastDistanceToNextCheckpoint = distanceToNextCheckpoint;
+            this.offRouteUpdatesCounter++;
+
+            Log.d(TAG, "OFF THE ROUTE: lastDistanceToNextCheckpoint = " + this.lastDistanceToNextCheckpoint);
+            Log.d(TAG, "OFF THE ROUTE: offRouteUpdatesCounter = " + this.offRouteUpdatesCounter);
+
+            if (this.offRouteUpdatesCounter >= MIN_NUMBER_OF_OFF_THE_ROUTE_UPDATES_TO_NOTIFY) {
+                sendOffTheRouteLocalNotification(context);
+                this.offRouteUpdatesCounter = 0;
+            }
+        }
+    }
+
+    private void sendOffTheRouteLocalNotification(Context context) {
+
+        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle(context.getString(R.string.notification_lost_title))
+                        .setContentText(context.getString(R.string.notification_lost_text))
+                        .setSound(alarmSound);
+
+        // Increase an ID for the notification
+        this.offRouteNotificationCounter++;
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(this.offRouteNotificationCounter, mBuilder.build());
     }
 }

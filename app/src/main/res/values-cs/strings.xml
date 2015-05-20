@@ -60,4 +60,6 @@
     <string name="map_marker_snippet_presentwalker">můj pokrok (%s)</string>
     <string name="map_marker_snippet_walker_ahead">%,d m přede mnou</string>
     <string name="map_marker_snippet_walker_behind">%,d m za mnou</string>
+    <string name="notification_lost_title">Den cesty</string>
+    <string name="notification_lost_text">Vypadá to, že jsi zabloudil. Ujisti se pohledem do mapy, že jdeš správně.</string>
 </resources>

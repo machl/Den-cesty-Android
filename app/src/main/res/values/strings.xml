@@ -78,6 +78,8 @@
     <string name="map_marker_snippet_walker_behind">%,d m behind</string>
     <string name="map_marker_title_presentwalker" translatable="false">%,d m</string>
     <string name="map_marker_snippet_presentwalker">my progress (%s)</string>
+    <string name="notification_lost_title">Den cesty</string>
+    <string name="notification_lost_text">You are probably off the route. Check your race map and race plan.</string>
 
 
 </resources>
