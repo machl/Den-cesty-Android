@@ -216,6 +216,13 @@ public class WalkersModel {
 
         /**
          * New walker creation.
+         * @param name Full name
+         * @param distance Elapsed distance in meters
+         * @param avgSpeed Average speed in km/h
+         * @param raceState State in race
+         * @param latitude Latitude coordinate of last known location
+         * @param longitude Longitude coordinate of last known location
+         * @param updatedAt Last time updated
          */
         public Walker(String name, int distance, double avgSpeed, int raceState,
                       double latitude, double longitude, Date updatedAt) {

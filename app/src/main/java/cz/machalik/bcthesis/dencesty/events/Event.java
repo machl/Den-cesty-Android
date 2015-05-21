@@ -18,7 +18,7 @@ import java.util.Map;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
- * Event represents a message which is sended by {@link cz.machalik.bcthesis.dencesty.events.EventUploaderService} to a server.
+ * Event represents a message which will be sended by {@link cz.machalik.bcthesis.dencesty.events.EventUploaderService} to a server.
  *
  * @author Lukáš Machalík
  */
@@ -37,7 +37,7 @@ public class Event implements Serializable {
      */
     public static final String EVENTTYPE_STOPRACE = "StopRace";
     /**
-     * Type of Event which holds location update data whose will be sended to a server.
+     * Type of Event which holds location update data.
      */
     public static final String EVENTTYPE_LOCATIONUPDATE = "LocationUpdate";
     /**
@@ -123,7 +123,7 @@ public class Event implements Serializable {
     }
 
     /**
-     * Converts Event to JSON representations.
+     * Converts Event to JSON representation.
      *
      * @return JSON representation of Event object.
      */

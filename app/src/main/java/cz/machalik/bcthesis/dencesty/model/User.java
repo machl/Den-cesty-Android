@@ -27,7 +27,7 @@ public class User {
     /****************************** Public API: ******************************/
 
     /**
-     * Obtain current User model. Never returns null.
+     * Obtains current User model. Never returns null.
      * @return User model
      */
     public static User get() {
@@ -75,7 +75,7 @@ public class User {
     }
 
     /**
-     * Return true if user is logged in.
+     * Returns true if user is logged in.
      * @return true if user is logged in
      */
     public boolean isLogged() {
@@ -128,7 +128,7 @@ public class User {
     }
 
     /**
-     * Obtain e-mail for login from shared preferences.
+     * Obtains e-mail for login from shared preferences.
      * @return user's email
      */
     public String getSavedCredentialsEmail(Context context) {
@@ -137,7 +137,7 @@ public class User {
     }
 
     /**
-     * Obtain password for login from shared preferences
+     * Obtains password for login from shared preferences
      * @return user's password
      */
     public String getSavedCredentialsPassword(Context context) { // TODO: change to token (http://stackoverflow.com/questions/1925486/android-storing-username-and-password)

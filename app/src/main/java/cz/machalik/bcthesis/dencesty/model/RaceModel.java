@@ -36,7 +36,7 @@ public class RaceModel {
     /****************************** Public constants: ******************************/
 
     /**
-     * Walkers progress broadcast intent action.
+     * Current user's progress changed broadcast intent action.
      */
     public static final String ACTION_RACE_INFO_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_RACE_INFO_CHANGED";
 
@@ -164,7 +164,6 @@ public class RaceModel {
 
     /**
      * Stops race and stops capturing location.
-     * @param context
      */
     public void stopRace(Context context) {
         Log.d(TAG, "StopRace called");

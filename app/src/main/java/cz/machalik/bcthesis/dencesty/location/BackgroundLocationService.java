@@ -72,7 +72,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     /****************************** Public API: ******************************/
 
     /**
-     * Starts this service.
+     * Starts this service (it starts producing location updates).
      *
      * @see Service
      */
@@ -83,7 +83,7 @@ public class BackgroundLocationService extends Service implements GoogleApiClien
     }
 
     /**
-     * Stops this service.
+     * Stops this service (it stops producing location updates).
      *
      * @see Service
      */

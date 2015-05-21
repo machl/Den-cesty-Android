@@ -90,7 +90,7 @@ public class MyApplication extends Application {
     }
 
     /**
-     * Obtain User Model. You do not need to init model manually, it's lazily initialized.
+     * Obtains User Model. You do not need to init model manually, it's lazily initialized.
      * @return current User Model
      */
     public User getUserModel() {
@@ -116,7 +116,7 @@ public class MyApplication extends Application {
     }
 
     /**
-     * Obtain current Race Model.
+     * Obtains current Race Model.
      * @return current Race Model or null if there is no Race Model yet
      */
     public RaceModel getRaceModel() {
@@ -132,7 +132,7 @@ public class MyApplication extends Application {
     }
 
     /**
-     * Obtain current Walkers Model.
+     * Obtains current Walkers Model.
      * @return current Walkers Model or null if there is no Walkers Model yet
      */
     public WalkersModel getWalkersModel() {
