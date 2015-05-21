@@ -8,20 +8,36 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Lukáš Machalík
+ * Queue that holds Events for upload to a server.
+ *
+ * @author Lukáš Machalík
  */
 public class EventQueue {
 
+    /**
+     * Data structure.
+     */
     private List<Event> queue;
 
+    /**
+     * Creates new empty EventQueue.
+     */
     public EventQueue() {
         this.queue = new ArrayList<>();
     }
 
+    /**
+     * Adds Event at the end of this EventQueue.
+     * @param event the Event to add.
+     */
     public void add(Event event) {
         queue.add(event);
     }
 
+    /**
+     * Removes the first occurrences of the specified Event IDs.
+     * @param ids array of Event IDs for remove
+     */
     public void remove(int[] ids) {
         for (int id : ids) {
             Event founded = null;
@@ -37,10 +53,18 @@ public class EventQueue {
         }
     }
 
+    /**
+     * Returns the number of elements in this EventQueue.
+     * @return number of elements
+     */
     public int size() {
         return queue.size();
     }
 
+    /**
+     * Converts EventQueue to JSON representation.
+     * @return JSON representation of EventQueue with Events in JSON
+     */
     public synchronized JSONArray toJSONArray() {
         JSONArray array = new JSONArray();
 

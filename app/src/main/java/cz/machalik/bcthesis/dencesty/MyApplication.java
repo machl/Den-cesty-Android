@@ -14,9 +14,22 @@ import cz.machalik.bcthesis.dencesty.model.User;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 
 /**
+ * Custom Application object that holds references to all models, provide access to encrypted
+ * SharedPreferences and configures ACRA for automatic crashes reporting.
+ *
+ * <p>
+ * Models are hard to recreate, so Application object is the best way to hold model references,
+ * because Application object is deallocated on low memory as the last object of entire app instance.
+ *
+ * <p>
+ * About encrypted SharedPreferences:
  * https://github.com/scottyab/secure-preferences/blob/master/sample/src/com/securepreferences/sample/App.java
+ *
+ * <p>
+ * About ACRA crash reporting tool:
  * https://github.com/ACRA/acra/wiki/BasicSetup
- * Lukáš Machalík
+ *
+ * @author Lukáš Machalík
  */
 @ReportsCrashes(
         formUri = "http://www.machalik.cz/dencesty/report.php"
@@ -25,7 +38,10 @@ public class MyApplication extends Application {
 
     protected static final String TAG = "MyApplication";
 
-    protected static MyApplication instance;
+    // Singleton instance:
+    private static MyApplication instance;
+
+    // Encrypted prefs:
     private SecurePreferences mSecurePrefs;
 
     // Models:
@@ -33,17 +49,25 @@ public class MyApplication extends Application {
     private RaceModel raceModel;
     private WalkersModel walkersModel;
 
+    /**
+     * Required constructor called by a system.
+     */
     public MyApplication(){
         super();
         instance = this;
     }
+
+    /**
+     * Obtain Application singleton instance.
+     * @return current instance
+     */
     public static MyApplication get() {
         return instance;
     }
 
     /**
      * Single point for the app to get the secure prefs object
-     * @return
+     * @return encrypted SharedPreferences object
      */
     public SharedPreferences getSecureSharedPreferences() {
         if(mSecurePrefs==null){
@@ -53,6 +77,10 @@ public class MyApplication extends Application {
         return mSecurePrefs;
     }
 
+    /**
+     * Called when the application is starting, before any activity, service,
+     * or receiver objects (excluding content providers) have been created.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -61,6 +89,10 @@ public class MyApplication extends Application {
         ACRA.init(this);
     }
 
+    /**
+     * Obtain User Model. You do not need to init model manually, it's lazily initialized.
+     * @return current User Model
+     */
     public User getUserModel() {
         // lazy init
         if (this.userModel == null) {
@@ -71,7 +103,10 @@ public class MyApplication extends Application {
         return this.userModel;
     }
 
-
+    /**
+     * Sets new current Race Model.
+     * @param raceModel new Race Model
+     */
     public void setRaceModel(RaceModel raceModel) {
         if (this.raceModel != null) {
             this.raceModel.stopRace(this);
@@ -80,15 +115,26 @@ public class MyApplication extends Application {
         this.raceModel = raceModel;
     }
 
+    /**
+     * Obtain current Race Model.
+     * @return current Race Model or null if there is no Race Model yet
+     */
     public RaceModel getRaceModel() {
         return raceModel;
     }
 
-
+    /**
+     * Sets new current Walkers Model.
+     * @param walkersModel new Walkers Model
+     */
     public void setWalkersModel(WalkersModel walkersModel) {
         this.walkersModel = walkersModel;
     }
 
+    /**
+     * Obtain current Walkers Model.
+     * @return current Walkers Model or null if there is no Walkers Model yet
+     */
     public WalkersModel getWalkersModel() {
         return walkersModel;
     }

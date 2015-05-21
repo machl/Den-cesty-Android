@@ -11,11 +11,12 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.util.Date;
 
-import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
- * Lukáš Machalík
+ * Represents actual race progress (walkers scoreboard) as is on server.
+ *
+ * @author Lukáš Machalík
  */
 public class WalkersModel {
 
@@ -23,11 +24,19 @@ public class WalkersModel {
 
     /****************************** Public constants: ******************************/
 
+    /**
+     * Intent broadcast action on new update.
+     */
     public static final String ACTION_WALKERS_DID_REFRESHED = "cz.machalik.bcthesis.dencesty.action.ACTION_WALKERS_DID_REFRESHED";
 
 
     /****************************** Public API: ******************************/
 
+    /**
+     * Tries to download new content from a server (synchronously).
+     * You have to run this method from background thread (eg. download thread with AsyncTask).
+     * @return true if success
+     */
     public boolean fetchWalkersFromWeb(Context context) {
         JSONObject jsonResponse = WebAPI.synchronousWalkersListRequest(this.raceId, User.get().getWalkerId());
 
@@ -40,26 +49,50 @@ public class WalkersModel {
         return false;
     }
 
+    /**
+     * Returns present walker.
+     * @return present walker
+     */
     public Walker getPresentWalker() {
         return presentWalker;
     }
 
+    /**
+     * Returns all walkers ahead present walker (current user).
+     * @return walkers ahead
+     */
     public Walker[] getWalkersAhead() {
         return walkersAhead;
     }
 
+    /**
+     * Returns all walkers behind present walker (current user).
+     * @return walkers behind
+     */
     public Walker[] getWalkersBehind() {
         return walkersBehind;
     }
 
+    /**
+     * Returns total number of walkers ahead present walker (current user).
+     * @return walkers ahead count
+     */
     public int getNumWalkersAhead() {
         return numWalkersAhead;
     }
 
+    /**
+     * Returns total number of walkers behind present walker (current user).
+     * @return walkers behind count
+     */
     public int getNumWalkersBehind() {
         return numWalkersBehind;
     }
 
+    /**
+     * Returns total number of walkers with ended race.
+     * @return walkers with ended race count
+     */
     public int getNumWalkersEnded() {
         return numWalkersEnded;
     }
@@ -79,6 +112,10 @@ public class WalkersModel {
     private Walker[] walkersAhead;
     private Walker[] walkersBehind;
 
+    /**
+     * Creates empty walkers model with given Race ID
+     * @param raceId current Race ID
+     */
     public WalkersModel(int raceId) {
         this.raceId = raceId;
 
@@ -94,13 +131,16 @@ public class WalkersModel {
         this.walkersBehind = new Walker[0];
     }
 
+    /**
+     * Walkers model initialization from server data.
+     * @param jsonData
+     */
     private void initializeWalkers(JSONObject jsonData) {
         if (!jsonData.has("distance") || !jsonData.has("speed") || !jsonData.has("numWalkersAhead") ||
                 !jsonData.has("numWalkersBehind") || !jsonData.has("numWalkersEnded") ||
                 !jsonData.has("walkersAhead") || !jsonData.has("walkersBehind")) {
             String message = "Response RaceInfo missing some entries";
             Log.e(TAG, message);
-            FileLogger.log(TAG, message);
             return;
         }
 
@@ -152,11 +192,19 @@ public class WalkersModel {
         }
     }
 
+    /**
+     * Raises broadcast message that walkers model has updated.
+     */
     private void notifyWalkersDidRefreshed(Context context) {
         Intent intent = new Intent(ACTION_WALKERS_DID_REFRESHED);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
+    /**
+     * Data structure for race competitor (aka walker).
+     *
+     * @author Lukáš Machalík
+     */
     public static class Walker {
         public final String name;
         public final int distance;
@@ -166,6 +214,9 @@ public class WalkersModel {
         public final double longitude;
         public final Date updatedAt;
 
+        /**
+         * New walker creation.
+         */
         public Walker(String name, int distance, double avgSpeed, int raceState,
                       double latitude, double longitude, Date updatedAt) {
             this.name = name;
@@ -178,6 +229,9 @@ public class WalkersModel {
         }
     }
 
+    /**
+     * Walker's state in race.
+     */
     public static class RaceState {
         public static final int NOTSTARTED = 0;
         public static final int STARTED = 1;

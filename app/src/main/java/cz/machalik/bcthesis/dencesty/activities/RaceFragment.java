@@ -23,6 +23,9 @@ import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 
 /**
+ * A race progress screen with user's progress in race and start/stop race buttons.
+ *
+ * <p>
  * A simple {@link Fragment} subclass.
  * Use the {@link RaceFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -33,7 +36,14 @@ public class RaceFragment extends Fragment {
 
     private OnRaceFragmentInteractionListener mListener;
 
+    /**
+     * Receiver of Event queue size updates.
+     */
     private BroadcastReceiver mUnsentCounterReceiver;
+
+    /**
+     * Receiver of Race Model data changes.
+     */
     private BroadcastReceiver mRaceInfoChangedReceiver;
 
     // UI references.
@@ -45,7 +55,7 @@ public class RaceFragment extends Fragment {
     private TextView mLocationUpdatesCounter;
 
     /**
-     * Use this factory method to create a new instance
+     * Use this factory method to create a new instance.
      *
      * @return A new instance of fragment RaceFragment.
      */
@@ -55,14 +65,25 @@ public class RaceFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Required empty public constructor. Do not use it to create new instances.
+     */
     public RaceFragment() {
-        // Required empty public constructor
     }
 
+    /**
+     * Race Model reference getter.
+     * @return current Race Model
+     */
     private RaceModel getRaceModel() {
         return MyApplication.get().getRaceModel();
     }
 
+    /**
+     * Called to do initial creation of a fragment.  This is called after
+     * {@link #onAttach(Activity)} and before
+     * {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +93,10 @@ public class RaceFragment extends Fragment {
         setRetainInstance(true);
     }
 
+    /**
+     * Called when a fragment is first attached to its activity.
+     * {@link #onCreate(Bundle)} will be called after this.
+     */
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -83,12 +108,19 @@ public class RaceFragment extends Fragment {
         }
     }
 
+    /**
+     * Called when the fragment is no longer attached to its activity.  This
+     * is called after {@link #onDestroy()}.
+     */
     @Override
     public void onDetach() {
         super.onDetach();
         this.mListener = null;
     }
 
+    /**
+     * Creates view of fragment.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -119,6 +151,12 @@ public class RaceFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     * This is generally
+     * tied to {@link Activity#onResume() Activity.onResume} of the containing
+     * Activity's lifecycle.
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -128,6 +166,10 @@ public class RaceFragment extends Fragment {
         onDidAppear();
     }
 
+    /**
+     * Hint about whether this fragment's UI is currently visible
+     * to the user.
+     */
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -136,6 +178,9 @@ public class RaceFragment extends Fragment {
         }
     }
 
+    /**
+     * Called when fragment is probably becoming visible to user.
+     */
     private void onDidAppear() {
         // Stop race if race is over.
         getRaceModel().checkFinishFromActivity(getActivity());
@@ -145,6 +190,11 @@ public class RaceFragment extends Fragment {
         updateVisibilityOfButtons();
     }
 
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to {@link Activity#onPause() Activity.onPause} of the containing
+     * Activity's lifecycle.
+     */
     @Override
     public void onPause() {
         super.onPause();
@@ -152,6 +202,9 @@ public class RaceFragment extends Fragment {
         unregisterBroadcastReceivers();
     }
 
+    /**
+     * Registration of all broadcast receivers.
+     */
     private void registerBroadcastReceivers() {
         // Register broadcast receiver on unsent events counter updates
         mUnsentCounterReceiver = new BroadcastReceiver() {
@@ -181,18 +234,26 @@ public class RaceFragment extends Fragment {
                         new IntentFilter(RaceModel.ACTION_RACE_INFO_CHANGED));
     }
 
+    /**
+     * Removing registration of all broadcast receivers.
+     */
     private void unregisterBroadcastReceivers() {
         // unregister broadcast receivers
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mUnsentCounterReceiver);
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRaceInfoChangedReceiver);
     }
 
-
+    /**
+     * Called when "Start Race" button is pressed.
+     */
     private void startButtonPressed() {
         getRaceModel().startRace(getActivity());
         updateVisibilityOfButtons();
     }
 
+    /**
+     * Called when "Stop Race" button is pressed.
+     */
     private void showDialogToEndRace() {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -218,18 +279,28 @@ public class RaceFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Called when "Stop Race" confirmation button is pressed.
+     */
     private void endRace() {
         Log.d(TAG, "EndRace called");
         getRaceModel().stopRace(getActivity());
         updateVisibilityOfButtons();
     }
 
+    /**
+     * Updates values in view.
+     */
     private void refreshRaceInfoValues() {
         this.mDistanceTextView.setText(String.format("%,d m", getRaceModel().getRaceDistance()));
         this.mAvgSpeedTextView.setText(String.format("%.2f km/h", getRaceModel().getRaceAvgSpeed()));
         this.mLocationUpdatesCounter.setText(""+getRaceModel().getLocationUpdatesCounter());
     }
 
+    /**
+     * Updates value in "Unsent messages counter" label with new value.
+     * @param numOfUnsentMessages new value of unsent counter
+     */
     private void setUnsentCounter(int numOfUnsentMessages) {
         mUnsentCounter.setText(""+numOfUnsentMessages);
         if (numOfUnsentMessages > 0)
@@ -238,6 +309,9 @@ public class RaceFragment extends Fragment {
             mUnsentCounter.setTextColor(getResources().getColor(R.color.counter_default));
     }
 
+    /**
+     * Updates visibility of Start/Stop race button based on current race status.
+     */
     private void updateVisibilityOfButtons() {
         if (this.mListener != null) {
             this.mListener.onRaceFragmentUpdateVisibilityOfButtons();

@@ -23,7 +23,11 @@ import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
- * Lukáš Machalík
+ * Represents actual race progress and race state for current user.
+ *
+ * It has to be initialized with init method call on background thread (not UI thread!).
+ *
+ * @author Lukáš Machalík
  */
 public class RaceModel {
 
@@ -31,14 +35,29 @@ public class RaceModel {
 
     /****************************** Public constants: ******************************/
 
+    /**
+     * Walkers progress broadcast intent action.
+     */
     public static final String ACTION_RACE_INFO_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_RACE_INFO_CHANGED";
 
+    /**
+     * Time interval before official race start to allow user start race (capturing location).
+     * In seconds.
+     */
     public static final int TIMEINTERVAL_BEFORE_RACE_START_TO_ALLOW_START_LOCATION = 10 * 60;
 
     /****************************** Public API: ******************************/
 
+    /**
+     * Creates empty RaceModel. To proper initialization, call init from download thread.
+     */
     public RaceModel() {}
 
+    /**
+     * Init RaceModel with data from a server (synchronously). You have to run this method
+     * from background thread (eg. download thread with AsyncTask).
+     * @param raceId Race ID of race
+     */
     public boolean init(Context context, int raceId) {
         JSONObject response = WebAPI.synchronousRaceDataRequest(raceId, User.get().getWalkerId());
 
@@ -89,6 +108,10 @@ public class RaceModel {
         return true;
     }
 
+    /**
+     * Starts race and starts capturing location.
+     * May fail and show alert dialog when time is before official start time or race time is over.
+     */
     public void startRace(Activity activity) {
 
         if (!this.isStarted && BackgroundLocationService.isLocationProviderEnabled(activity)) {
@@ -139,6 +162,10 @@ public class RaceModel {
         }
     }
 
+    /**
+     * Stops race and stops capturing location.
+     * @param context
+     */
     public void stopRace(Context context) {
         Log.d(TAG, "StopRace called");
         if (this.isStarted) {
@@ -158,6 +185,10 @@ public class RaceModel {
         }
     }
 
+    /**
+     * Manually checks if race time is over. Call this method when app is becoming to foreground etc.
+     * May show dialog that informs user about race finishing.
+     */
     public void checkFinishFromActivity(Activity activity) {
         Log.d(TAG, "Checking finish from activity.");
         checkFinishOnBackground(activity);
@@ -172,24 +203,45 @@ public class RaceModel {
         }
     }
 
+    /**
+     * Return true if race is in progress (if user starts race in this app).
+     * @return true if race is in progress
+     */
     public boolean isStarted() {
         return isStarted;
     }
 
+    /**
+     * Returns current Race ID.
+     * @return current race id
+     */
     public int getRaceId() {
         return raceId;
     }
 
+    /**
+     * Returns current user's elapsed distance in race.
+     * @return elapsed distance in meters
+     */
     public int getRaceDistance() {
         // May be not inited yet
         return distanceModel != null ? distanceModel.getDistance() : 0;
     }
 
+    /**
+     * Returns current user's average speed in race.
+     * @return average speed in km/h
+     */
     public double getRaceAvgSpeed() {
         // May be not inited yet
         return distanceModel != null ? distanceModel.getAvgSpeed() : 0;
     }
 
+    /**
+     * Checks if current time is between official race start time and finish time, or it is certain
+     * time interval (10 minutes) before start time.
+     * @return true, if user is allowed to start race
+     */
     public boolean isRaceAbleToStart() {
         Date now = new Date();
         long deltaSeconds = (now.getTime() - this.startTime.getTime()) / 1000;
@@ -203,6 +255,10 @@ public class RaceModel {
         return true;
     }
 
+    /**
+     * Checks if current time is between official race start time and finish time.
+     * @return true, if real race is in progress
+     */
     public boolean isTimeInRace() {
         Date now = new Date();
         if (now.before(this.startTime)) {
@@ -215,10 +271,18 @@ public class RaceModel {
         return true;
     }
 
+    /**
+     * Returns number of location updates so far.
+     * @return location updates count
+     */
     public int getLocationUpdatesCounter() {
         return locationUpdatesCounter;
     }
 
+    /**
+     * Returns race route.
+     * @return race route
+     */
     public Checkpoint[] getCheckpoints() {
         return this.distanceModel.getCheckpoints();
     }
@@ -236,10 +300,19 @@ public class RaceModel {
      */
     private int locationUpdatesCounter = 0;
 
+    /**
+     * Receiver for location updates from BackgroundLocationService.
+     */
     private BroadcastReceiver mLocationChangedReceiver;
 
+    /**
+     * If true, it will show automatic end race alert dialog when app becomes foreground.
+     */
     private boolean showEndRaceAlert = false;
 
+    /**
+     * Starts capturing location updates.
+     */
     private void startLocationService(Context context) {
         // Register broadcast receiver on location updates
         mLocationChangedReceiver = new BroadcastReceiver() {
@@ -260,6 +333,11 @@ public class RaceModel {
         this.isStarted = true;
     }
 
+    /**
+     * Called when new location updates arrives.
+     * @param context context of location update source
+     * @param location location update
+     */
     private void onLocationChanged(Context context, Location location) {
         if (isTimeInRace()) {
             distanceModel.onLocationChanged(context, location);
@@ -273,6 +351,9 @@ public class RaceModel {
         notifySomeRaceInfoChanged(context);
     }
 
+    /**
+     * Creates and sends new Event of type LocationUpdate to server.
+     */
     private void fireLocationUpdateEvent(Context context, Location location) {
         Float course = location.hasBearing() ? location.getBearing() : -1;
         Double altitude = location.hasAltitude() ? location.getAltitude() : -1;
@@ -313,6 +394,9 @@ public class RaceModel {
         EventUploaderService.performUpload(context);
     }
 
+    /**
+     * Checks if race time is over.
+     */
     private void checkFinishOnBackground(Context context) {
         if (isStarted() && !isRaceAbleToStart()) {
             Log.d(TAG, "checkFinishOnBackground stopping race");
@@ -321,6 +405,9 @@ public class RaceModel {
         }
     }
 
+    /**
+     * Fires message to controllers that user's race progress has changed.
+     */
     private void notifySomeRaceInfoChanged(Context context) {
         Intent intent = new Intent(ACTION_RACE_INFO_CHANGED);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);

@@ -20,12 +20,21 @@ import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 import cz.machalik.bcthesis.dencesty.other.SwipeRefreshListFragment;
 
 /**
- * A fragment representing a list of Walkers.
+ * A race scoreboard screen with all competitors and their progress in current race.
+ *
+ * <p>
+ * A simple {@link android.app.ListFragment} subclass.
+ * Use the {@link RaceFragment#newInstance} factory method to
+ * create an instance of this fragment.
  */
 public class WalkersListFragment extends SwipeRefreshListFragment {
 
     protected static final String TAG = "WalkersListFragment";
 
+    /**
+     * Minimal time interval for automatic refreshing of list from a server.
+     * It prevents refreshing too often.
+     */
     private static final int TIMEINTERVAL_TO_SUPPRESS_REFRESHING = 5 * 60; // in seconds
 
     private Date lastTimeRefreshed = null;
@@ -35,8 +44,16 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
      */
     private WalkersUpdateAsyncTask mRefreshTask = null;
 
+    /**
+     * Adapter for list.
+     */
     private WalkersListAdapter walkersListAdapter = null;
 
+    /**
+     * Use this factory method to create a new instance.
+     *
+     * @return A new instance of fragment RaceFragment.
+     */
     public static WalkersListFragment newInstance() {
         WalkersListFragment fragment = new WalkersListFragment();
         return fragment;
@@ -49,10 +66,19 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
     public WalkersListFragment() {
     }
 
+    /**
+     * Walkers Model reference getter.
+     * @return current Walkers Model
+     */
     private WalkersModel getWalkersModel() {
         return MyApplication.get().getWalkersModel();
     }
 
+    /**
+     * Called to do initial creation of a fragment.  This is called after
+     * {@link #onAttach(android.app.Activity)} and before
+     * {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +87,9 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
         setRetainInstance(true);
     }
 
+    /**
+     * Attach to list view once the view hierarchy has been created.
+     */
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -83,12 +112,22 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
         });
     }
 
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     * This is generally
+     * tied to {@link android.app.Activity#onResume() Activity.onResume} of the containing
+     * Activity's lifecycle.
+     */
     @Override
     public void onResume() {
         super.onResume();
         onDidAppear();
     }
 
+    /**
+     * Hint about whether this fragment's UI is currently visible
+     * to the user.
+     */
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -97,6 +136,9 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
         }
     }
 
+    /**
+     * Called when fragment is probably becoming visible to user.
+     */
     private void onDidAppear() {
         //Log.e(TAG, "onDidAppear");
 
@@ -118,6 +160,9 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
     }
 
     /**
+     * Refreshes list content from a server.
+     *
+     * <p>
      * By abstracting the refresh process to a single method, the app allows both the
      * SwipeGestureLayout onRefresh() method and the Refresh action item to refresh the content.
      */
@@ -132,7 +177,7 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
         mRefreshTask = new WalkersUpdateAsyncTask(getActivity());
         mRefreshTask.execute();
 
-        // TODO: vypustit location update s okamzitou polohou
+        // TODO: (nápad) vypustit location update s okamzitou polohou?
 
         // Do manually upload events
         EventUploaderService.performUpload(getActivity());
@@ -157,6 +202,9 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
         setRefreshing(false);
     }
 
+    /**
+     * Represents an asynchronous task used to refresh Walkers Model content.
+     */
     private class WalkersUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
         private final Context mContext;
@@ -184,6 +232,9 @@ public class WalkersListFragment extends SwipeRefreshListFragment {
         }
     }
 
+    /**
+     * Data adapter for ListView.
+     */
     private class WalkersListAdapter extends BaseAdapter {
 
         private final Context context;

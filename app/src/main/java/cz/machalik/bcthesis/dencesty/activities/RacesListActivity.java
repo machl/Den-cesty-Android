@@ -31,18 +31,34 @@ import cz.machalik.bcthesis.dencesty.location.BackgroundLocationService;
 import cz.machalik.bcthesis.dencesty.model.User;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
+/**
+ * A races list screen with all available races downloaded from a server.
+ *
+ * @author Lukáš Machalík
+ */
 public class RacesListActivity extends ListActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     protected static final String TAG = "RacesListActivity";
 
+    /**
+     * Minimal time interval for automatic refreshing of list from a server.
+     * It prevents refreshing too often.
+     */
     private static final int TIMEINTERVAL_TO_SUPPRESS_REFRESHING = 5 * 60; // in seconds
-    private static final int TIMEINTERVAL_BEFORE_START_TO_ALLOW_CONTINUE = 10 * 60; // in seconds
+
+    /**
+     * Maximum interval before official race start to allow continue to race detail.
+     */
+    public static final int TIMEINTERVAL_BEFORE_START_TO_ALLOW_CONTINUE = 10 * 60; // in seconds
 
     /**
      * Keep track of the refresh task to ensure we can cancel it if requested.
      */
     private RacesUpdateAsyncTask mRefreshTask = null;
 
+    /**
+     * Race items.
+     */
     private List<RaceItem> races = new ArrayList<>();
 
     // UI references.
@@ -51,6 +67,10 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
 
     private Date lastTimeRefreshed = null;
 
+    /**
+     * Called when the activity is starting.  This is where most initialization
+     * should go.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +91,10 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         lv.setEmptyView(mEmptySwipeContainer);
     }
 
+    /**
+     * Called after {@link #onRestoreInstanceState}, {@link #onRestart}, or
+     * {@link #onPause}, for your activity to start interacting with the user.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -86,6 +110,9 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         BackgroundLocationService.isLocationProviderEnabled(this);
     }
 
+    /**
+     * Creates options menu (for Logout button).
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -93,6 +120,9 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         return true;
     }
 
+    /**
+     * Called when options menu item is selected (pressed).
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -108,16 +138,26 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Called when logout button was pressed.
+     * Dismisses this activity.
+     */
     private void logout() {
         User.get().logout(this);
         finish();
     }
 
+    /**
+     * Called when user do "pull to refresh" gesture.
+     */
     @Override
     public void onRefresh() {
         attemptRefresh();
     }
 
+    /**
+     * Creates new background download task to update races list.
+     */
     private void attemptRefresh() {
         if (mRefreshTask != null) {
             return;
@@ -130,6 +170,9 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         mRefreshTask.execute();
     }
 
+    /**
+     * Represents an asynchronous task used to refresh list of races.
+     */
     private class RacesUpdateAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
         private final Context mContext;
@@ -164,6 +207,11 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         }
     }
 
+    /**
+     * Process response from server on races list update attempt.
+     * @param response server response data
+     * @return returns true if data were successfully parsed
+     */
     private Boolean processResponse(JSONArray response) {
 
         if (response == null) {
@@ -195,17 +243,27 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         return true;
     }
 
+    /**
+     * Shows or hides loading spinning wheel.
+     * @param show true will show loading, false will hide loading
+     */
     private void showProgress(final boolean show) {
         mSwipeContainer.setRefreshing(show);
         mEmptySwipeContainer.setRefreshing(show);
     }
 
+    /**
+     * Force tell ListView to update it's content.
+     */
     private void updateRacesList() {
         //getListView().setAdapter(new RacesListAdapter(this));
         final RacesListAdapter adapter = ((RacesListAdapter)getListAdapter());
         adapter.notifyDataSetChanged();
     }
 
+    /**
+     * Data structure for single race item.
+     */
     private class RaceItem {
         int id;
         String nameCS;
@@ -222,6 +280,9 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         }
     }
 
+    /**
+     * Data adapter for ListView.
+     */
     private class RacesListAdapter extends BaseAdapter {
 
         private List<RaceItem> data;
@@ -288,6 +349,9 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
         }
     }
 
+    /**
+     * Called when user selects list item.
+     */
     @Override
     protected void onListItemClick(ListView list, View view, int position, long id) {
         super.onListItemClick(list, view, position, id);
@@ -308,6 +372,10 @@ public class RacesListActivity extends ListActivity implements SwipeRefreshLayou
 
     }
 
+    /**
+     * Starts next activity (race detail) with specified Race ID.
+     * @param raceId selected Race ID
+     */
     private void startRaceTabbedActivity(int raceId) {
         Intent intent = new Intent(this, RaceTabbedActivity.class);
         intent.putExtra(RaceTabbedActivity.EXTRA_RACEID, raceId);

@@ -22,19 +22,34 @@ import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
- * Lukáš Machalík
+ * Model for calculating elapsed distance on a race route. It also calculates average speed and
+ * send notification when user is off the route.
+ *
+ * It has to be initialized with init method with data from a server.
+ *
+ * @author Lukáš Machalík
  */
 public class DistanceModel {
 
     protected static final String TAG = "DistanceModel";
 
+    /**
+     * Minimum distance to determine that user is moving away from route.
+     */
     public static final int MIN_DISTANCE_TO_MARK_AS_OFF_THE_ROUTE_UPDATE = 300;
+
+    /**
+     * Number of off route location updates before warning user.
+     */
     public static final int MIN_NUMBER_OF_OFF_THE_ROUTE_UPDATES_TO_NOTIFY = 3;
 
+    /**
+     * Intent broadcast action when walkers elapsed distance changed.
+     */
     public static final String ACTION_DISTANCE_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_DISTANCE_CHANGED";
 
-    private int distance = 0;
-    private double avgSpeed = 0.0;
+    private int distance = 0; // in meters
+    private double avgSpeed = 0.0; // in km/h
     private int lastCheckpoint = 0;
     private Date startTime;
     private Checkpoint[] checkpoints;
@@ -46,10 +61,18 @@ public class DistanceModel {
     private int offRouteUpdatesCounter = 0;
     private int offRouteNotificationCounter = 0;
 
+    /**
+     * Creates empty DistanceModel. To proper initialization, call init from download thread.
+     */
     public DistanceModel() {
         lastKnownLocation = null;
     }
 
+    /**
+     * Init DistanceModel with JSON data from a server. It is suitable to run this method
+     * from background thread (eg. download thread).
+     * @param data distance model data from a server
+     */
     public void init(JSONObject data) {
         final JSONObject raceInfo = data.optJSONObject("race");
         this.startTime = null;
@@ -86,6 +109,11 @@ public class DistanceModel {
         });
     }
 
+    /**
+     * Call this when new location update is available.
+     * @param context Context of location update source.
+     * @param location New location update.
+     */
     public void onLocationChanged(Context context, Location location) {
         if (!location.hasAccuracy() || location.getAccuracy() > 200 ) {
             // inaccurate location updates filter
@@ -107,6 +135,11 @@ public class DistanceModel {
         }
     }
 
+    /**
+     * Calculates elapsed distance on race route.
+     * @param location location update
+     * @return elapsed distance in meters
+     */
     private int calculateDistance(Location location) {
 
         int count = checkpoints.length - 1;
@@ -134,11 +167,19 @@ public class DistanceModel {
         return 0;
     }
 
+    /**
+     * Calculates average speed based on actual elapsed distance and race start time.
+     * @param location location update
+     * @return average speed in km/h
+     */
     private double calculateAvgSpeed(Location location) {
         long secondsSinceStart = (location.getTime() - startTime.getTime()) / 1000;
         return ((double)this.distance / secondsSinceStart) * 3.6;
     }
 
+    /**
+     * Raises broadcast message that elapsed distance has changed.
+     */
     private void notifyDistanceChanged(Context context, Location location) {
         lastKnownLocation = location;
 
@@ -146,18 +187,34 @@ public class DistanceModel {
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
+    /**
+     * Returns elapsed distance on race route.
+     * @return elapsed distance in meters
+     */
     public int getDistance() {
         return distance;
     }
 
+    /**
+     * Returns average speed.
+     * @return average speed in km/h
+     */
     public double getAvgSpeed() {
         return avgSpeed;
     }
 
+    /**
+     * Returns Check ID of last passed Checkpoint.
+     * @return check id
+     */
     public int getLastCheckpoint() {
         return lastCheckpoint;
     }
 
+    /**
+     * Calculates distance between two coordinates.
+     * @return distance in meters
+     */
     private static float distanceBetween(double startLatitude, double startLongitude,
                                          double endLatitude, double endLongitude) {
         float[] results = new float[1];
@@ -165,23 +222,43 @@ public class DistanceModel {
         return results[0];
     }
 
+    /**
+     * Returns race route.
+     * @return race route
+     */
     public Checkpoint[] getCheckpoints() {
         return checkpoints;
     }
 
+    /**
+     * Returns last known location on route.
+     * @return last known location on route
+     */
     public static Location getLastKnownLocation() {
         return lastKnownLocation;
     }
 
+    /**
+     * Returns the number of previously delivered off route location updates.
+     * @return off route locaton updates count
+     */
     public int getOffRouteUpdatesCounter() {
         return offRouteUpdatesCounter;
     }
 
+    /**
+     * Call this method when location update is near the race route.
+     * @param location location update
+     */
     private void onOnRouteLocationUpdate(Location location) {
         this.lastDistanceToNextCheckpoint = 0;
         this.offRouteUpdatesCounter = 0;
     }
 
+    /**
+     * Call this method when location update is determined as off race route.
+     * @param location location update
+     */
     private void onOffRouteLocationUpdate(Context context, Location location) {
         Checkpoint nextCheckpoint = checkpoints[this.lastCheckpoint + 1];
         float distanceToNextCheckpoint = distanceBetween(location.getLatitude(), location.getLongitude(),
@@ -202,6 +279,9 @@ public class DistanceModel {
         }
     }
 
+    /**
+     * Shows up notification to use for warning about getting lost.
+     */
     private void sendOffTheRouteLocalNotification(Context context) {
 
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);

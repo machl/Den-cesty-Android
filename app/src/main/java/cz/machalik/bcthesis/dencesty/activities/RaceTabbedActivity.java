@@ -22,6 +22,11 @@ import cz.machalik.bcthesis.dencesty.R;
 import cz.machalik.bcthesis.dencesty.model.RaceModel;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 
+/**
+ * A race detail screen that contains 3 tabs (fragments) with race detail, race scoreboard and map.
+ *
+ * @author Lukáš Machalík
+ */
 public class RaceTabbedActivity extends Activity implements ActionBar.TabListener,
         RaceFragment.OnRaceFragmentInteractionListener {
 
@@ -29,18 +34,20 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
 
     protected static final String EXTRA_RACEID = "cz.machalik.bcthesis.dencesty.extra.RACEID";
 
+    /**
+     * Background download task for race initialization (Race Model init).
+     */
     private LoadRaceTask mLoadRaceTask = null;
     private RaceModel preparedRaceModel = null;
 
+    /**
+     * Current Race ID.
+     */
     private int raceId;
 
     /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     * The SectionsPagerAdapter that will provide
+     * fragments for each of the sections.
      */
     SectionsPagerAdapter mSectionsPagerAdapter;
 
@@ -49,14 +56,26 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
      */
     ViewPager mViewPager;
 
+    /**
+     * Race Model reference getter.
+     * @return current Race Model
+     */
     private RaceModel getRaceModel() {
         return MyApplication.get().getRaceModel();
     }
 
+    /**
+     * Walkers Model reference getter.
+     * @return current Walkers Model
+     */
     private WalkersModel getWalkersModel() {
         return MyApplication.get().getWalkersModel();
     }
 
+    /**
+     * Called when the activity is starting.  This is where most initialization
+     * should go.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,11 +99,18 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         }
     }
 
+    /**
+     * Start background task to load race data.
+     * @param raceId
+     */
     private void attemptLoadRace(int raceId) {
         mLoadRaceTask = new LoadRaceTask(this, raceId);
         mLoadRaceTask.execute();
     }
 
+    /**
+     * Represents an asynchronous task used to load race data for Race Model initialization.
+     */
     private class LoadRaceTask extends AsyncTask<Void, Void, Boolean> {
 
         private final Context mContext;
@@ -136,6 +162,9 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         }
     }
 
+    /**
+     * Called on successful Race Model init.
+     */
     private void onSuccessfulLoadRace() {
         MyApplication.get().setRaceModel(this.preparedRaceModel);
         this.preparedRaceModel = null;
@@ -149,6 +178,9 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         getRaceModel().checkFinishFromActivity(this);
     }
 
+    /**
+     * Setups view pager with tabs.
+     */
     private void setUpViewPager() {
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -185,22 +217,33 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         }
     }
 
+    /**
+     * Called after {@link #onRestoreInstanceState}, {@link #onRestart}, or
+     * {@link #onPause}, for your activity to start interacting with the user.
+     */
     @Override
     protected void onResume() {
         super.onResume();
 
-        // Stop race if race is over.
+        // Stop race if race time is over.
         if (getRaceModel() != null) {
             getRaceModel().checkFinishFromActivity(this);
         }
     }
 
+    /**
+     * Save state for recreation.
+     */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(EXTRA_RACEID, this.raceId);
     }
 
+    /**
+     * Called when activity is being destroyed. It's important to stop capturing location,
+     * when this screen disappear, because user has no other chance to stop it.
+     */
     @Override
     protected void onDestroy() {
         Log.d("RaceTabbedActivity", "onDestroy called");
@@ -218,7 +261,9 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         super.onDestroy();
     }
 
-
+    /**
+     * Prevents activity dismiss when hardware back button is pressed and race is in progress (it's started in app).
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -237,6 +282,9 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         return super.onKeyDown(keyCode, event);
     }
 
+    /**
+     * Updates visibility of software back button based on race status.
+     */
     @Override
     public void onRaceFragmentUpdateVisibilityOfButtons() {
         if (getRaceModel().isStarted()) {
@@ -246,6 +294,9 @@ public class RaceTabbedActivity extends Activity implements ActionBar.TabListene
         }
     }
 
+    /**
+     * Tab switching handle.
+     */
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
         // When the given tab is selected, switch to the corresponding page in

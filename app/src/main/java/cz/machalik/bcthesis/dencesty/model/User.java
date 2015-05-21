@@ -12,11 +12,13 @@ import cz.machalik.bcthesis.dencesty.BuildConfig;
 import cz.machalik.bcthesis.dencesty.MyApplication;
 import cz.machalik.bcthesis.dencesty.events.Event;
 import cz.machalik.bcthesis.dencesty.events.EventUploaderService;
-import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
- * Lukáš Machalík
+ * Represents logged User and provides saved login credentials.
+ * It is singleton, use it with User.get().
+ *
+ * @author Lukáš Machalík
  */
 public class User {
     protected static final String TAG = "User";
@@ -24,14 +26,27 @@ public class User {
 
     /****************************** Public API: ******************************/
 
+    /**
+     * Obtain current User model. Never returns null.
+     * @return User model
+     */
     public static User get() {
         return MyApplication.get().getUserModel();
     }
 
+    /**
+     * Result of login attempt.
+     */
     public enum LoginResult {
         SUCCESS, FAILED, CONNECTION_ERROR
     }
 
+    /**
+     * Attempts to log in with given credentials. Saves given credentials on success.
+     * @param email user's e-mail
+     * @param password user's password
+     * @return {@link cz.machalik.bcthesis.dencesty.model.User.LoginResult}
+     */
     public LoginResult attemptLogin(Context context, String email, String password) {
         JSONObject jsonResponse = WebAPI.synchronousLoginHandlerRequest(email, password);
 
@@ -42,37 +57,56 @@ public class User {
         boolean success = jsonResponse.optBoolean("success");
         if (success) {
             onSuccessfulLogin(context, jsonResponse);
-            saveCreditials(context, email, password);
+            saveCredentials(context, email, password);
             return LoginResult.SUCCESS;
         } else {
             Log.i(TAG, "Login: wrong email or password");
-            removeCreditials(context);
+            removeCredentials(context);
             return LoginResult.FAILED;
         }
     }
 
+    /**
+     * Logs out current user and removes his credentials.
+     */
     public void logout(Context context) {
         setLogged(context, false);
-        removeCreditials(context);
+        removeCredentials(context);
     }
 
+    /**
+     * Return true if user is logged in.
+     * @return true if user is logged in
+     */
     public boolean isLogged() {
         return this.isLogged;
     }
 
+    /**
+     * Returns user's ID.
+     * @return User ID
+     */
     public int getWalkerId() {
         return this.walkerId;
     }
 
+    /**
+     * Returns user's name and surname.
+     * @return name and surname connected with a space
+     */
     public String getWalkerFullName() {
         return this.walkerName + " " + this.walkerSurname;
     }
 
-    public boolean hasSavedCreditials(Context context) {
+    /**
+     * Returns true if user has saved credentials (is not logged out).
+     * @return true if credentials are found
+     */
+    public boolean hasSavedCredentials(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         SharedPreferences sharedSecurePreferences = MyApplication.get().getSecureSharedPreferences();
 
-        // Remove old sharedPreferences password in plaintext (version 3.3 to 3.4 upgrade)
+        // Remove old sharedPreferences password in plaintext (version 3.3 to 3.4+ upgrade)
         if (sharedPreferences.contains(SHAREDPREFERENCES_PASSWORD_KEY)) {
             String plainPassword = sharedPreferences.getString(SHAREDPREFERENCES_PASSWORD_KEY, null);
 
@@ -94,17 +128,19 @@ public class User {
     }
 
     /**
-     * Obtain email for login from shared preferences
+     * Obtain e-mail for login from shared preferences.
+     * @return user's email
      */
-    public String getSavedCreditialsEmail(Context context) {
+    public String getSavedCredentialsEmail(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         return sharedPreferences.getString(SHAREDPREFERENCES_EMAIL_KEY, null);
     }
 
     /**
      * Obtain password for login from shared preferences
+     * @return user's password
      */
-    public String getSavedCreditialsPassword(Context context) { // TODO: change to token (http://stackoverflow.com/questions/1925486/android-storing-username-and-password)
+    public String getSavedCredentialsPassword(Context context) { // TODO: change to token (http://stackoverflow.com/questions/1925486/android-storing-username-and-password)
         SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
         return secureSharedPreferences.getString(SHAREDPREFERENCES_PASSWORD_KEY, null);
     }
@@ -133,6 +169,9 @@ public class User {
     private String walkerName;
     private String walkerSurname;
 
+    /**
+     * Used only by Application object to initialize User Model.
+     */
     public User(Context context) {
         // recreation on low memory
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
@@ -144,7 +183,10 @@ public class User {
         }
     }
 
-    public void setLogged(Context context, boolean isLogged) {
+    /**
+     * Saves user model state to persist memory for future recreating.
+     */
+    private void setLogged(Context context, boolean isLogged) {
         this.isLogged = isLogged;
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
@@ -153,6 +195,9 @@ public class User {
                 .commit();
     }
 
+    /**
+     * Saves user's id to persist memory for future recreating.
+     */
     private void setWalkerId(Context context, int walkerId) {
         this.walkerId = walkerId;
 
@@ -162,6 +207,9 @@ public class User {
                 .commit();
     }
 
+    /**
+     * Saves user's name to persist memory for future recreating.
+     */
     private void setWalkerName(Context context, String walkerName) {
         this.walkerName = walkerName;
 
@@ -171,6 +219,9 @@ public class User {
                 .commit();
     }
 
+    /**
+     * Saves user's surname to persist memory for future recreating.
+     */
     private void setWalkerSurname(Context context, String walkerSurname) {
         this.walkerSurname = walkerSurname;
 
@@ -180,11 +231,14 @@ public class User {
                 .commit();
     }
 
+    /**
+     * Called when user is successfully logged in.
+     * @param jsonData data from server response on login attempt
+     */
     private void onSuccessfulLogin(Context context, JSONObject jsonData) {
         if (!jsonData.has("id") || !jsonData.has("name") || !jsonData.has("surname")) {
             String message = "Response login missing info";
             Log.e(TAG, message);
-            FileLogger.log(TAG, message);
             return;
         }
 
@@ -198,13 +252,15 @@ public class User {
         event.getExtras().put("sdk", Integer.valueOf(Build.VERSION.SDK_INT));
         event.getExtras().put("model", Build.MODEL);
         event.getExtras().put("appVersion", BuildConfig.VERSION_NAME);
-        // TODO: info o povolených polohových službách, internetu ...?
 
         EventUploaderService.addEvent(context, event);
         EventUploaderService.performUpload(context);
     }
 
-    private void saveCreditials(Context context, String email, String password) {
+    /**
+     * Saves user's credentials to persist memory.
+     */
+    private void saveCredentials(Context context, String email, String password) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
 
@@ -217,7 +273,10 @@ public class User {
                 .commit();
     }
 
-    private void removeCreditials(Context context) {
+    /**
+     * Removes user's credentials from persist memory.
+     */
+    private void removeCredentials(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         SharedPreferences secureSharedPreferences = MyApplication.get().getSecureSharedPreferences();
 

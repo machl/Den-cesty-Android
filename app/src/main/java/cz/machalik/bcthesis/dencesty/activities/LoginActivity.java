@@ -27,7 +27,7 @@ import cz.machalik.bcthesis.dencesty.model.User.LoginResult;
 /**
  * A login screen that offers login via email/password.
  *
- * Lukáš Machalík
+ * @author Lukáš Machalík
  */
 public class LoginActivity extends Activity {
 
@@ -44,6 +44,10 @@ public class LoginActivity extends Activity {
     private View mProgressView;
     private View mLoginFormView;
 
+    /**
+     * Called when the activity is starting.  This is where most initialization
+     * should go.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,10 +83,13 @@ public class LoginActivity extends Activity {
         attemptAutomaticLogin();
     }
 
-    public void attemptAutomaticLogin() {
-        if (User.get().hasSavedCreditials(this)) {
-            String email = User.get().getSavedCreditialsEmail(this);
-            String password = User.get().getSavedCreditialsPassword(this);
+    /**
+     * Attempt automatic login with already saved credentials.
+     */
+    private void attemptAutomaticLogin() {
+        if (User.get().hasSavedCredentials(this)) {
+            String email = User.get().getSavedCredentialsEmail(this);
+            String password = User.get().getSavedCredentialsPassword(this);
 
             mEmailView.setText(email);
 
@@ -96,7 +103,7 @@ public class LoginActivity extends Activity {
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    public void attemptNewLogin() {
+    private void attemptNewLogin() {
         if (mAuthTask != null) {
             return;
         }
@@ -139,6 +146,9 @@ public class LoginActivity extends Activity {
         }
     }
 
+    /**
+     * Simple email validity check.
+     */
     private boolean isEmailValid(String email) {
         return email.contains("@");
     }
@@ -183,8 +193,8 @@ public class LoginActivity extends Activity {
      * Show a progress spinner, and kick off a background task to
      * perform the user login attempt.
      *
-     * @param email
-     * @param password
+     * @param email entered email
+     * @param password entered password
      */
     private void performLoginTask(String email, String password) {
         showProgress(true);
@@ -192,17 +202,25 @@ public class LoginActivity extends Activity {
         mAuthTask.execute((Void) null);
     }
 
-
+    /**
+     * Called on successful login attempt.
+     */
     private void onSuccessfulLogin() {
         Intent intent = new Intent(this, RacesListActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Called on failed login attempt due to incorrect credentials.
+     */
     private void onFailedLogin() {
         mPasswordView.setError(getString(R.string.error_incorrect_password));
         mPasswordView.requestFocus();
     }
 
+    /**
+     * Called on failed login attempt due to connection problems.
+     */
     private void onConnectionError() {
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.connection_error_title))
@@ -212,8 +230,7 @@ public class LoginActivity extends Activity {
     }
 
     /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
+     * Represents an asynchronous login task used to authenticate the user.
      */
     private class UserLoginTask extends AsyncTask<Void, Void, LoginResult> {
 

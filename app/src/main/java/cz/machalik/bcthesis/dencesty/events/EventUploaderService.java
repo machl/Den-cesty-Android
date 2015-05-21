@@ -12,11 +12,11 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
-import cz.machalik.bcthesis.dencesty.other.FileLogger;
 import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
 
 /**
- * An {@link IntentService} subclass for handling asynchronous task requests in
+ * Service for uploading Events on background to a server.
+ * It is an {@link IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
  * <p/>
  *
@@ -24,21 +24,27 @@ import cz.machalik.bcthesis.dencesty.webapi.WebAPI;
  * http://developer.android.com/guide/components/services.html
  * <p/>
  *
- * Lukáš Machalík
+ * @author Lukáš Machalík
  */
 public class EventUploaderService extends IntentService {
     protected static final String TAG = "EventUploaderService";
 
     /****************************** Public constants: ******************************/
 
+    /**
+     * Broadcast intent action identifier for event queue size changes.
+     */
     public static final String ACTION_EVENT_QUEUE_SIZE_CHANGED = "cz.machalik.bcthesis.dencesty.action.ACTION_EVENT_QUEUE_SIZE_CHANGED";
+    /**
+     * Intent action extra for event queue size.
+     */
     public static final String EXTRA_EVENT_QUEUE_SIZE = "cz.machalik.bcthesis.dencesty.extra.EVENT_QUEUE_SIZE";
 
 
     /****************************** Public API: ******************************/
 
     /**
-     * Starts this service to perform action AddEvent with the given parameters. If
+     * Starts this service to perform action AddEvent with the given Event. If
      * the service is already performing a task this action will be queued.
      *
      * @see IntentService
@@ -51,7 +57,7 @@ public class EventUploaderService extends IntentService {
     }
 
     /**
-     * Starts this service to perform action Upload with the given parameters. If
+     * Starts this service to perform action Upload. If
      * the service is already performing a task this action will be queued.
      *
      * @see IntentService
@@ -63,18 +69,9 @@ public class EventUploaderService extends IntentService {
     }
 
     /**
-     * Starts this service to perform action RemoveEvents with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
+     * Returns current number of unsent Events.
+     * @return event queue size
      */
-    /*public static void removeEvents(Context context, int[] ids) {
-        Intent intent = new Intent(context, EventUploaderService.class);
-        intent.setAction(ACTION_REMOVE_EVENTS);
-        intent.putExtra(EXTRA_IDS, ids);
-        context.startService(intent);
-    }*/
-
     public static int getEventQueueSize() {
         return eventQueueSize;
     }
@@ -84,19 +81,24 @@ public class EventUploaderService extends IntentService {
 
     private static final String ACTION_ADD_EVENT = "cz.machalik.bcthesis.dencesty.action.ADD_EVENT";
     private static final String ACTION_PERFORM_UPLOAD = "cz.machalik.bcthesis.dencesty.action.PERFORM_UPLOAD";
-    //private static final String ACTION_REMOVE_EVENTS = "cz.machalik.bcthesis.dencesty.action.REMOVE_EVENTS";
 
     private static final String EXTRA_EVENT = "cz.machalik.bcthesis.dencesty.extra.EVENT";
-    //private static final String EXTRA_IDS = "cz.machalik.bcthesis.dencesty.extra.IDS";
 
     private static EventQueue eventQueue = new EventQueue();
 
     private static int eventQueueSize = 0;
 
+    /**
+     * Default constructor. Used by a IntentService internally.
+     */
     public EventUploaderService() {
         super("EventUploaderService");
     }
 
+    /**
+     * Handles incoming intent.
+     * @param intent intent to process
+     */
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
@@ -106,10 +108,7 @@ public class EventUploaderService extends IntentService {
                 handleActionAddEvent(event);
             } else if (ACTION_PERFORM_UPLOAD.equals(action)) {
                 handleActionUpload();
-            } /*else if (ACTION_REMOVE_EVENTS.equals(action)) {
-                final int[] ids = intent.getIntArrayExtra(EXTRA_IDS);
-                handleActionRemoveEvents(ids);
-            }*/
+            }
         }
     }
 
@@ -119,7 +118,6 @@ public class EventUploaderService extends IntentService {
      */
     private void handleActionAddEvent(Event event) {
         Log.i(TAG, "New event: " + event.toString());
-        FileLogger.log(TAG, "New event: " + event.toString());
 
         eventQueue.add(event);
         eventQueueSizeChanged();
@@ -154,13 +152,11 @@ public class EventUploaderService extends IntentService {
                     } catch (JSONException e) {
                         String message = "Event upload response: JSONException: " + e.getLocalizedMessage();
                         Log.e(TAG, message);
-                        FileLogger.log(TAG, message);
                         e.printStackTrace();
                     }
                 } else {
                     String message = "Event upload response: Wrong response: " + jsonResponse.toString();
                     Log.e(TAG, message);
-                    FileLogger.log(TAG, message);
                 }
             }
         } else {
@@ -174,9 +170,8 @@ public class EventUploaderService extends IntentService {
      */
     private void handleActionRemoveEvents(int[] ids) {
         String message = "Removing events: " + Arrays.toString(ids) +
-                         " Remaining count: " + (eventQueue.size()-ids.length); // TODO: may be -1
+                         " Remaining count: " + (eventQueue.size()-ids.length); // beware, may be -1
         Log.i(TAG, message);
-        FileLogger.log(TAG, message);
 
         eventQueue.remove(ids);
         eventQueueSizeChanged();

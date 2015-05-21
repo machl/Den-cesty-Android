@@ -38,6 +38,9 @@ import cz.machalik.bcthesis.dencesty.model.WalkersModel;
 import cz.machalik.bcthesis.dencesty.model.WalkersModel.Walker;
 
 /**
+ * A race map screen with race track and race participants locations.
+ *
+ * <p>
  * A simple {@link MapFragment} subclass.
  * Use the {@link RaceMapFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -46,12 +49,29 @@ public class RaceMapFragment extends MapFragment {
 
     protected static final String TAG = "RaceMapFragment";
 
+    /**
+     * Receiver of Distance Model data changes.
+     */
     private BroadcastReceiver mDistanceChangedReceiver;
+
+    /**
+     * Receiver of Walkers Model data changes.
+     */
     private BroadcastReceiver mWalkersRefreshReceiver;
 
+    /**
+     * List of map markers with race participants.
+     */
     private List<Marker> walkersMapMarkers = null;
+
+    /**
+     * Marker of current user's last known location.
+     */
     private Marker lastLocationUpdateMarker = null;
 
+    /**
+     * Date format for test in marker bubbles.
+     */
     private SimpleDateFormat timeFormatter = new SimpleDateFormat("H:mm");
 
     /**
@@ -65,18 +85,33 @@ public class RaceMapFragment extends MapFragment {
         return fragment;
     }
 
+    /**
+     * Required empty public constructor
+     */
     public RaceMapFragment() {
-        // Required empty public constructor
     }
 
+    /**
+     * Race Model reference getter.
+     * @return current Race Model
+     */
     private RaceModel getRaceModel() {
         return MyApplication.get().getRaceModel();
     }
 
+    /**
+     * Walkers Model reference getter.
+     * @return current Walkers Model
+     */
     private WalkersModel getWalkersModel() {
         return MyApplication.get().getWalkersModel();
     }
 
+    /**
+     * Called to do initial creation of a fragment.  This is called after
+     * {@link #onAttach(android.app.Activity)} and before
+     * {@link #onCreateView(android.view.LayoutInflater, android.view.ViewGroup, Bundle)}.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +120,9 @@ public class RaceMapFragment extends MapFragment {
         setRetainInstance(true);
     }
 
+    /**
+     * Attach to list view once the view hierarchy has been created.
+     */
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -108,6 +146,10 @@ public class RaceMapFragment extends MapFragment {
         }
     }
 
+    /**
+     * Hint about whether this fragment's UI is currently visible
+     * to the user.
+     */
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -116,6 +158,12 @@ public class RaceMapFragment extends MapFragment {
         }
     }
 
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     * This is generally
+     * tied to {@link android.app.Activity#onResume() Activity.onResume} of the containing
+     * Activity's lifecycle.
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -127,6 +175,11 @@ public class RaceMapFragment extends MapFragment {
         }
     }
 
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to {@link android.app.Activity#onPause() Activity.onPause} of the containing
+     * Activity's lifecycle.
+     */
     @Override
     public void onPause() {
         super.onPause();
@@ -134,6 +187,9 @@ public class RaceMapFragment extends MapFragment {
         unregisterBroadcastReceivers();
     }
 
+    /**
+     * Registration of all broadcast receivers.
+     */
     private void registerBroadcastReceivers() {
         // Register broadcast receiver on distance updates
         mDistanceChangedReceiver = new BroadcastReceiver() {
@@ -162,12 +218,19 @@ public class RaceMapFragment extends MapFragment {
                         new IntentFilter(WalkersModel.ACTION_WALKERS_DID_REFRESHED));
     }
 
+    /**
+     * Removing registration of all broadcast receivers.
+     */
     private void unregisterBroadcastReceivers() {
         // unregister broadcast receivers
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mDistanceChangedReceiver);
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mWalkersRefreshReceiver);
     }
 
+    /**
+     * Called when Distance Model computes new elapsed distance.
+     * It removes old current user's last known location marker and adds a new one.
+     */
     private void onDistanceChangedNotification() {
         Location location = DistanceModel.getLastKnownLocation();
         if (location == null) {
@@ -191,6 +254,10 @@ public class RaceMapFragment extends MapFragment {
         this.lastLocationUpdateMarker = marker;
     }
 
+    /**
+     * Called when Walkers Model has refreshed his data.
+     * It removes all walkers map markers and adds a new ones.
+     */
     private void showWalkersOnMap() {
         // Remove walkers markers from map
         if (this.walkersMapMarkers != null) {
@@ -254,6 +321,9 @@ public class RaceMapFragment extends MapFragment {
         }
     }
 
+    /**
+     * Draws checkpoints (race route) to a map as a polyline.
+     */
     private void drawCheckpoints() {
         Checkpoint[] checkpoints = getRaceModel().getCheckpoints();
 
