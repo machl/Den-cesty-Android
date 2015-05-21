@@ -124,8 +124,7 @@ public class EventUploaderService extends IntentService {
     }
 
     /**
-     * Handle action Upload in the provided background thread with the provided
-     * parameters.
+     * Handle action Upload in the provided background thread.
      */
     private void handleActionUpload() {
         if (eventQueue.size() > 0) {
@@ -146,7 +145,6 @@ public class EventUploaderService extends IntentService {
                             savedIds[i] = savedIdsJsonArray.getInt(i);
                         }
 
-                        //EventUploaderService.removeEvents(this, savedIds);
                         handleActionRemoveEvents(savedIds);
 
                     } catch (JSONException e) {
@@ -166,7 +164,7 @@ public class EventUploaderService extends IntentService {
 
     /**
      * Handle action RemoveEvents in the provided background thread with the provided
-     * parameters.
+     * Event IDs.
      */
     private void handleActionRemoveEvents(int[] ids) {
         String message = "Removing events: " + Arrays.toString(ids) +
@@ -177,6 +175,9 @@ public class EventUploaderService extends IntentService {
         eventQueueSizeChanged();
     }
 
+    /**
+     * Raises broadcast message about event queue size change.
+     */
     private void eventQueueSizeChanged() {
         eventQueueSize = eventQueue.size();
 
